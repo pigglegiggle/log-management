@@ -1,0 +1,75 @@
+services:
+  fluent-bit:
+    image: cr.fluentbit.io/fluent/fluent-bit:latest
+    container_name: fluent-bit
+    volumes:
+      - ./fluent-bit:/fluent-bit/config
+      - ./logs:/logs
+    command: /fluent-bit/bin/fluent-bit -c /fluent-bit/config/fluent-bit.conf
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: logdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./backend:/app          # mount code จาก host → container
+      - /app/node_modules       # ป้องกัน node_modules override
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: 1234
+      DB_NAME: logdb
+      JWT_SECRET: supersecret
+    depends_on:
+      - db
+
+  ingest:
+    build:
+      context: ./ingest
+      dockerfile: Dockerfile
+    container_name: ingest
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=mysql://root:1234@db:3306/logdb
+      - DB_NAME=logdb
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=1234
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3001:3001"
+    volumes:
+    - ./frontend:/app          # mount code
+    - /app/node_modules        # ป้องกัน node_modules ใน container ถูก mount ทับ
+    environment:
+      NEXT_PUBLIC_BACKEND_API_URL: http://127.0.0.1:3002
+    depends_on:
+      - backend
+      - ingest
+
+volumes:
+  db_data:

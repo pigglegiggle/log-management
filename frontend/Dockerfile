@@ -8,9 +8,10 @@ COPY package*.json ./
 
 RUN npm install
 
-# ไม่ต้อง COPY โค้ด เพราะจะใช้ volume mount
+# Copy source code
 COPY . .
 
+ENV NODE_ENV=development
 ENV PORT=3001
 EXPOSE 3001
 

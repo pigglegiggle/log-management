@@ -10,6 +10,8 @@
   "dependencies": {
     "chart.js": "^4.5.0",
     "chartjs-adapter-date-fns": "^3.0.0",
+    "datatables.net-dt": "^2.3.3",
+    "datatables.net-react": "^1.0.1",
     "date-fns": "^4.1.0",
     "next": "15.5.2",
     "react": "19.1.0",
@@ -18,6 +20,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.0",
     "tailwindcss": "^4"
   }
 }

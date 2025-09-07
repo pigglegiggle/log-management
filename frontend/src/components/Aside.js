@@ -44,6 +44,14 @@ export default function Aside({ username }) {
               แจ้งเตือน
             </Link>
           </li>
+          <li>
+            <Link 
+              href='/retention'
+              className='block px-4 py-2 rounded-md hover:bg-gray-700 transition-colors'
+            >
+              Data Retention
+            </Link>
+          </li>
         </ul>
       </nav>
 

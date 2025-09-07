@@ -1,4 +1,5 @@
 'use client'
+import Head from 'next/head';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -12,7 +13,7 @@ function page() {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/login`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -35,10 +36,15 @@ function page() {
         }
     };
     return (
-        <div className="flex justify-center">
-            <div className="shadow-md p-8 w-96 mt-20">
-                {error && <div className="bg-red-100 text-red-700 p-2 mb-4 text-center">{error}</div>}
-                <h1 className="text-2xl font-bold mb-4 text-center">เข้าสู่ระบบ</h1>
+        <>
+            <Head>
+                <title>Login - Log Management System</title>
+                <meta name="description" content="Log in to access the log management system" />
+            </Head>
+            <div className="flex justify-center">
+                <div className="shadow-md p-8 w-96 mt-20">
+                    {error && <div className="bg-red-100 text-red-700 p-2 mb-4 text-center">{error}</div>}
+                    <h1 className="text-2xl font-bold mb-4 text-center">เข้าสู่ระบบ</h1>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block mb-2">ชื่อผู้ใช้</label>
@@ -71,9 +77,8 @@ function page() {
                         <button type="submit" className="bg-blue-500 text-white p-2 w-full">{loading ? 'กำลังเข้าสู่ระบบ': 'เข้าสู่ระบบ'}</button>
                     </div>
                 </form>
+                </div>
             </div>
-        </div>
+        </>
     )
-    }
-
-export default page
+}export default page

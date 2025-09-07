@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Head from 'next/head';
 
 function Page() {
     const router = useRouter();
@@ -17,7 +18,7 @@ function Page() {
         setSuccess('');
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/signup`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -42,11 +43,16 @@ function Page() {
     };
 
     return (
-        <div className="flex justify-center">
-            <div className="shadow-md p-8 w-96 mt-20">
-                {error && <div className="bg-red-100 text-red-700 p-2 mb-4 text-center">{error}</div>}
-                {success && <div className="bg-green-100 text-green-700 p-2 mb-4 text-center">{success}</div>}
-                <h1 className="text-2xl font-bold mb-4 text-center">สมัครสมาชิก</h1>
+        <>
+            <Head>
+                <title>Sign Up - Log Management System</title>
+                <meta name="description" content="Create a new account for the log management system" />
+            </Head>
+            <div className="flex justify-center">
+                <div className="shadow-md p-8 w-96 mt-20">
+                    {error && <div className="bg-red-100 text-red-700 p-2 mb-4 text-center">{error}</div>}
+                    {success && <div className="bg-green-100 text-green-700 p-2 mb-4 text-center">{success}</div>}
+                    <h1 className="text-2xl font-bold mb-4 text-center">สมัครสมาชิก</h1>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block mb-2">ชื่อผู้ใช้</label>
@@ -80,6 +86,7 @@ function Page() {
                 </form>
             </div>
         </div>
+        </>
     );
 }
 

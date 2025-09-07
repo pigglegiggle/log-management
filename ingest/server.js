@@ -1,248 +1,308 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { sequelize, connectDB } = require('./models');
+const fs = require('fs');
+const path = require('path');
+const { pool, waitForDatabase } = require('./db');
 const { parseFirewallLog, parseNetworkLog } = require('./parsers');
 
 const app = express();
 app.use(bodyParser.json());
 
-const DB_NAME = process.env.DB_NAME;
-const DB_HOST = process.env.DB_HOST;
-const DB_USER = process.env.DB_USER;
-const DB_PASSWORD = process.env.DB_PASSWORD;
+// Function to convert severity to number (only if provided)
+function getSeverityAsNumber(severity) {
+  // If already a number, return it
+  if (typeof severity === 'number') {
+    return severity;
+  }
+  
+  // If string, convert to number
+  if (typeof severity === 'string' && severity.trim() !== '') {
+    const severityMap = {
+      'low': 2,
+      'info': 4,
+      'medium': 6,
+      'warning': 6,
+      'high': 8,
+      'critical': 10
+    };
+    
+    const mapped = severityMap[severity.toLowerCase()];
+    if (mapped !== undefined) {
+      return mapped;
+    }
+  }
+  
+  // Return null if no valid severity provided
+  return null;
+}
 
-// --- Route ingest
+// Function to get or create tenant ID
+async function getTenantId(tenantName) {
+  try {
+    // Check if tenant exists
+    const [results] = await pool.execute(`
+      SELECT id FROM tenants WHERE name = ?
+    `, [tenantName]);
+    
+    if (results.length > 0) {
+      return results[0].id;
+    }
+    
+    // Create new tenant if doesn't exist
+    const [insertResult] = await pool.execute(`
+      INSERT INTO tenants (name, description) VALUES (?, ?)
+    `, [tenantName, `Auto-created tenant: ${tenantName}`]);
+    
+    console.log(`Created new tenant: ${tenantName} with ID: ${insertResult.insertId}`);
+    return insertResult.insertId;
+    
+  } catch (error) {
+    console.error(`Error getting/creating tenant ${tenantName}:`, error);
+    throw error;
+  }
+}
+
+// Function to get or create source ID
+async function getSourceId(sourceName) {
+  try {
+    // Check if source exists
+    const [results] = await pool.execute(`
+      SELECT id FROM sources WHERE name = ?
+    `, [sourceName]);
+    
+    if (results.length > 0) {
+      return results[0].id;
+    }
+    
+    // Create new source if doesn't exist
+    const [insertResult] = await pool.execute(`
+      INSERT INTO sources (name, description) VALUES (?, ?)
+    `, [sourceName, `Auto-created source: ${sourceName}`]);
+    
+    console.log(`Created new source: ${sourceName} with ID: ${insertResult.insertId}`);
+    return insertResult.insertId;
+    
+  } catch (error) {
+    console.error(`Error getting/creating source ${sourceName}:`, error);
+    throw error;
+  }
+}
+
+// --- Route ingest (Simplified)
 app.post('/ingest', async (req, res) => {
   let data = req.body;
   if (Array.isArray(data)) data = data[0];
   console.log('Received data:', data);
   
-  const logType = data.log_type || data.log_tag; // Support both log_type and log_tag
-  const rawLog = data.raw || data.log || '';
+  const logType = data.log_type || data.log_tag || 'tenant';
+  const sourceName = data.source || 'unknown';
+  const rawLog = data.raw || data.log || JSON.stringify(data);
 
-  console.log(`Received log_type: ${logType}`);
+  console.log(`Processing log_type: ${logType}, source: ${sourceName}`);
 
-  let parsed;
   try {
-    switch (logType) {
-      case 'firewall':
-        // Insert เข้า logs_firewall และ logs
-        parsed = data;
-        // เก็บแค่ค่าของ log แทน object ทั้งหมด
-        const firewallRaw = data.log || JSON.stringify(data);
-        
-        // Insert into logs_firewall
-        await sequelize.query(`
-          INSERT INTO logs_firewall (timestamp, source, vendor, product, action, src_ip, src_port, dst_ip, dst_port, protocol, host, rule_name, rule_id, raw, _tags)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, {
-          replacements: [
-            parsed['@timestamp'] ? new Date(parsed['@timestamp']) : new Date(),
-            data.source || 'firewall',
-            parsed.vendor || null,
-            parsed.product || null,
-            parsed.action || null,
-            parsed.src || parsed.src_ip || null,
-            parsed.spt || parsed.src_port || null,
-            parsed.dst || parsed.dst_ip || null,
-            parsed.dpt || parsed.dst_port || null,
-            parsed.proto || parsed.protocol || null,
-            parsed.hostname || parsed.host || null,
-            parsed.rule_name || null,
-            parsed.rule_id || null,
-            firewallRaw,
-            parsed._tags ? JSON.stringify(parsed._tags) : null
-          ],
-          type: sequelize.QueryTypes.INSERT
-        });
-
-        // Insert into main logs table
-        await sequelize.query(`
-          INSERT INTO logs (timestamp, tenant, source, vendor, product, action, src_ip, src_port, dst_ip, dst_port, protocol, host, rule_name, rule_id, raw, _tags)
-          VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, {
-          replacements: [
-            parsed['@timestamp'] ? new Date(parsed['@timestamp']) : new Date(),
-            data.source || 'firewall',
-            parsed.vendor || null,
-            parsed.product || null,
-            parsed.action || null,
-            parsed.src || parsed.src_ip || null,
-            parsed.spt || parsed.src_port || null,
-            parsed.dst || parsed.dst_ip || null,
-            parsed.dpt || parsed.dst_port || null,
-            parsed.proto || parsed.protocol || null,
-            parsed.hostname || parsed.host || null,
-            parsed.rule_name || null,
-            parsed.rule_id || null,
-            firewallRaw,
-            parsed._tags ? JSON.stringify(parsed._tags) : null
-          ],
-          type: sequelize.QueryTypes.INSERT
-        });
-
-        console.log(`Inserted firewall log with source: ${data.source}`);
-        break;
-
-      case 'network':
-        // Insert เข้า logs_network และ logs
-        parsed = data;
-        // เก็บแค่ค่าของ log แทน object ทั้งหมด
-        const networkRaw = data.log || JSON.stringify(data);
-        
-        // Insert into logs_network
-        await sequelize.query(`
-          INSERT INTO logs_network (timestamp, source, interface, event, mac, reason, host, raw, _tags)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, {
-          replacements: [
-            parsed['@timestamp'] ? new Date(parsed['@timestamp']) : new Date(),
-            data.source || 'network',
-            parsed.interface || null,
-            parsed.event || parsed.event_type || null,
-            parsed.mac || null,
-            parsed.reason || null,
-            parsed.hostname || parsed.host || null,
-            networkRaw,
-            parsed._tags ? JSON.stringify(parsed._tags) : null
-          ],
-          type: sequelize.QueryTypes.INSERT
-        });
-
-        // Insert into main logs table
-        await sequelize.query(`
-          INSERT INTO logs (timestamp, tenant, source, event_type, host, raw, _tags)
-          VALUES (?, NULL, ?, ?, ?, ?, ?)
-        `, {
-          replacements: [
-            parsed['@timestamp'] ? new Date(parsed['@timestamp']) : new Date(),
-            data.source || 'network',
-            parsed.event || parsed.event_type || null,
-            parsed.hostname || parsed.host || null,
-            networkRaw,
-            parsed._tags ? JSON.stringify(parsed._tags) : null
-          ],
-          type: sequelize.QueryTypes.INSERT
-        });
-
-        console.log(`Inserted network log with source: ${data.source}`);
-        break;
-
-      default:
-        // Multi-tenant log - insert เข้า logs_{tenant} และ logs
-        const tenant = data.tenant || 'default';
-        parsed = { ...data, raw: JSON.stringify(data) };
-        
-        // Insert into tenant-specific table
-        const tenantTable = `logs_${tenant}`;
-        await sequelize.query(`
-          INSERT INTO ${tenantTable} (timestamp, source, vendor, product, event_type, event_subtype, severity, action, src_ip, src_port, dst_ip, dst_port, protocol, user, host, process, url, http_method, status_code, rule_name, rule_id, cloud, raw, _tags)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, {
-          replacements: [
-            parsed['@timestamp'] ? new Date(parsed['@timestamp']) : null,
-            data.source || null,
-            parsed.vendor || null,
-            parsed.product || null,
-            parsed.event_type || null,
-            parsed.event_subtype || null,
-            parsed.severity || null,
-            parsed.action || null,
-            parsed.src || parsed.src_ip || parsed.ip || null,
-            parsed.spt || parsed.src_port || null,
-            parsed.dst || parsed.dst_ip || null,
-            parsed.dpt || parsed.dst_port || null,
-            parsed.proto || parsed.protocol || null,
-            parsed.user || null,
-            parsed.hostname || parsed.host || null,
-            parsed.process || null,
-            parsed.url || null,
-            parsed.http_method || null,
-            parsed.status_code || parsed.status || null,
-            parsed.rule_name || null,
-            parsed.rule_id || null,
-            parsed.cloud ? JSON.stringify(parsed.cloud) : null,
-            JSON.stringify(parsed.raw),
-            parsed._tags ? JSON.stringify(parsed._tags) : null
-          ],
-          type: sequelize.QueryTypes.INSERT
-        });
-
-        // Insert into main logs table
-        await sequelize.query(`
-          INSERT INTO logs (timestamp, tenant, source, vendor, product, event_type, event_subtype, severity, action, src_ip, src_port, dst_ip, dst_port, protocol, user, host, process, url, http_method, status_code, rule_name, rule_id, cloud, raw, _tags)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, {
-          replacements: [
-            parsed['@timestamp'] ? new Date(parsed['@timestamp']) : null,
-            tenant,
-            data.source || null,
-            parsed.vendor || null,
-            parsed.product || null,
-            parsed.event_type || null,
-            parsed.event_subtype || null,
-            parsed.severity || null,
-            parsed.action || null,
-            parsed.src || parsed.src_ip || parsed.ip || null,
-            parsed.spt || parsed.src_port || null,
-            parsed.dst || parsed.dst_ip || null,
-            parsed.dpt || parsed.dst_port || null,
-            parsed.proto || parsed.protocol || null,
-            parsed.user || null,
-            parsed.hostname || parsed.host || null,
-            parsed.process || null,
-            parsed.url || null,
-            parsed.http_method || null,
-            parsed.status_code || parsed.status || null,
-            parsed.rule_name || null,
-            parsed.rule_id || null,
-            parsed.cloud ? JSON.stringify(parsed.cloud) : null,
-            JSON.stringify(parsed.raw),
-            parsed._tags ? JSON.stringify(parsed._tags) : null
-          ],
-          type: sequelize.QueryTypes.INSERT
-        });
-
-        console.log(`Inserted log for tenant: ${tenant}, source: ${data.source}, type: ${logType}`);
+    // Parse network/firewall logs with specific parsers
+    if (logType === 'firewall') {
+      const parsed = parseFirewallLog(rawLog);
+      data = { ...data, ...parsed };
+      console.log('Parsed firewall data:', parsed);
+    } else if (logType === 'network') {
+      const parsed = parseNetworkLog(rawLog);
+      data = { ...data, ...parsed };
+      console.log('Parsed network data:', parsed);
     }
 
-    res.json({ status: 'ok', data: parsed });
+    // Get source ID (auto-create if needed)
+    const sourceId = await getSourceId(sourceName);
+    
+    let tenantId = null;
+    
+    // Get tenant ID for tenant logs
+    if (logType === 'tenant' && data.tenant) {
+      tenantId = await getTenantId(data.tenant);
+    }
+
+    // Single insert into logs table
+    const logData = {
+      timestamp: data['@timestamp'] ? new Date(data['@timestamp']) : new Date(),
+      tenant_id: tenantId,
+      source_id: sourceId,
+      log_type: logType,
+      event_type: data.event_type || data.event || data.action || null,
+      severity: getSeverityAsNumber(data.severity),
+      message: data.message || data.log || JSON.stringify(data),
+      src_ip: data.src || data.src_ip || data.ip || null,
+      dst_ip: data.dst || data.dst_ip || null,
+      user: data.user || null,
+      host: data.hostname || data.host || null,
+      action: data.action || null,
+      src_port: data.spt || data.src_port || null,
+      dst_port: data.dpt || data.dst_port || null,
+      protocol: data.proto || data.protocol || null,
+      rule_name: data.rule_name || null,
+      rule_id: data.rule_id || null,
+      interface: data.interface || null,
+      mac: data.mac || null,
+      raw_data: rawLog,
+      tags: data._tags || data.tags ? JSON.stringify(data._tags || data.tags) : null
+    };
+
+    await pool.execute(`
+      INSERT INTO logs (
+        timestamp, tenant_id, source_id, log_type, event_type, severity, message,
+        src_ip, dst_ip, user, host, action, src_port, dst_port, protocol,
+        rule_name, rule_id, interface, mac, raw_data, tags, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      logData.timestamp, logData.tenant_id, logData.source_id, logData.log_type,
+      logData.event_type, logData.severity, logData.message, logData.src_ip,
+      logData.dst_ip, logData.user, logData.host, logData.action, logData.src_port,
+      logData.dst_port, logData.protocol, logData.rule_name, logData.rule_id,
+      logData.interface, logData.mac, logData.raw_data, logData.tags, new Date()
+    ]);
+
+    console.log(`✅ Inserted ${logType} log: tenant_id=${tenantId}, source_id=${sourceId}`);
+    res.json({ status: 'ok', data: logData });
+
   } catch (err) {
-    console.error('Error inserting log:', err);
+    console.error('❌ Error inserting log:', err);
     res.status(500).json({ status: 'error', message: err.message });
   }
 });
 
-// ฟังก์ชัน wait for database
-async function waitForDatabase() {
-  const maxRetries = 30;
-  let retries = 0;
-
-  while (retries < maxRetries) {
-    try {
-      await sequelize.authenticate();
-      console.log('Database is ready');
-      break;
-    } catch (error) {
-      console.log(`Waiting for database... (${retries + 1}/${maxRetries})`);
-      retries++;
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
+// File watcher function
+function watchLogFile(filePath, sourceName, logType) {
+  if (!fs.existsSync(filePath)) {
+    console.log(`Log file ${filePath} does not exist, skipping watcher`);
+    return;
   }
 
-  if (retries === maxRetries) {
-    console.error('Could not connect to database after maximum retries');
-    process.exit(1);
+  let lastSize = fs.statSync(filePath).size;
+  
+  fs.watchFile(filePath, { interval: 1000 }, (curr, prev) => {
+    if (curr.size > lastSize) {
+      const stream = fs.createReadStream(filePath, {
+        start: lastSize,
+        end: curr.size
+      });
+      
+      let buffer = '';
+      stream.on('data', (chunk) => {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // Keep incomplete line
+        
+        lines.forEach(line => {
+          if (line.trim()) {
+            console.log(`Processing ${logType} log from ${sourceName}: ${line.substring(0, 100)}...`);
+            
+            // Create synthetic log data
+            const logData = {
+              source: sourceName,
+              log_type: logType,
+              raw: line.trim(),
+              '@timestamp': new Date().toISOString()
+            };
+            
+            // Process the log (simulate POST to /ingest)
+            processLogData(logData);
+          }
+        });
+      });
+      
+      lastSize = curr.size;
+    }
+  });
+  
+  console.log(`📁 Watching ${filePath} for ${sourceName} (${logType}) logs`);
+}
+
+// Process log data (extracted from POST /ingest)
+async function processLogData(data) {
+  const logType = data.log_type || data.log_tag || 'tenant';
+  const sourceName = data.source || 'unknown';
+  const rawLog = data.raw || data.log || JSON.stringify(data);
+
+  try {
+    // Parse network/firewall logs with specific parsers
+    if (logType === 'firewall') {
+      const parsed = parseFirewallLog(rawLog);
+      data = { ...data, ...parsed };
+      console.log('Parsed firewall data:', Object.keys(parsed));
+    } else if (logType === 'network') {
+      const parsed = parseNetworkLog(rawLog);
+      data = { ...data, ...parsed };
+      console.log('Parsed network data:', Object.keys(parsed));
+    }
+
+    // Get source ID (auto-create if needed)
+    const sourceId = await getSourceId(sourceName);
+    
+    let tenantId = null;
+    
+    // Get tenant ID for tenant logs
+    if (logType === 'tenant' && data.tenant) {
+      tenantId = await getTenantId(data.tenant);
+    }
+
+    // Single insert into logs table
+    const logData = {
+      timestamp: data['@timestamp'] ? new Date(data['@timestamp']) : new Date(),
+      tenant_id: tenantId,
+      source_id: sourceId,
+      log_type: logType,
+      event_type: data.event_type || data.event || data.action || null,
+      severity: getSeverityAsNumber(data.severity),
+      message: JSON.stringify(data),
+      src_ip: data.src || data.src_ip || data.ip || null,
+      dst_ip: data.dst || data.dst_ip || null,
+      user: data.user || null,
+      host: data.hostname || data.host || null,
+      action: data.action || null,
+      src_port: data.spt || data.src_port || null,
+      dst_port: data.dpt || data.dst_port || null,
+      protocol: data.proto || data.protocol || null,
+      rule_name: data.rule_name || null,
+      rule_id: data.rule_id || null,
+      interface: data.interface || null,
+      mac: data.mac || null,
+      raw_data: rawLog,
+      tags: data._tags || data.tags ? JSON.stringify(data._tags || data.tags) : null
+    };
+
+    await pool.execute(`
+      INSERT INTO logs (
+        timestamp, tenant_id, source_id, log_type, event_type, severity, message,
+        src_ip, dst_ip, user, host, action, src_port, dst_port, protocol,
+        rule_name, rule_id, interface, mac, raw_data, tags, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      logData.timestamp, logData.tenant_id, logData.source_id, logData.log_type,
+      logData.event_type, logData.severity, logData.message, logData.src_ip,
+      logData.dst_ip, logData.user, logData.host, logData.action, logData.src_port,
+      logData.dst_port, logData.protocol, logData.rule_name, logData.rule_id,
+      logData.interface, logData.mac, logData.raw_data, logData.tags, new Date()
+    ]);
+
+    console.log(`✅ Inserted ${logType} log: tenant_id=${tenantId}, source_id=${sourceId}`);
+
+  } catch (err) {
+    console.error('❌ Error processing log:', err);
   }
 }
 
 // เริ่มต้น server
 async function startServer() {
   await waitForDatabase();
-  await connectDB();
+  
+  // Setup file watchers
+  const logsDir = path.join(__dirname, '..', 'logs');
+  watchLogFile(path.join(logsDir, 'network.log'), 'network', 'network');
+  watchLogFile(path.join(logsDir, 'firewall.log'), 'firewall', 'firewall');
   
   app.listen(3000, () => {
     console.log('Server running on port 3000');
+    console.log('🔍 File watchers initialized for network and firewall logs');
   });
 }
 

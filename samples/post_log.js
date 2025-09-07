@@ -9,7 +9,7 @@ const events = [
     "user": "alice",
     "ip": "203.0.113.7",
     "reason": "wrong_password",
-    "@timestamp": "2025-08-20T07:20:00Z"
+    "@timestamp": "2025-08-23T07:20:00Z"
   },
   {
     "tenant": "demoA",
@@ -20,7 +20,7 @@ const events = [
     "severity": 8,
     "sha256": "abc...",
     "action": "quarantine",
-    "@timestamp": "2025-08-20T08:00:00Z"
+    "@timestamp": "2025-08-23T08:00:00Z"
   },
   {
     "tenant": "demoB",
@@ -32,7 +32,7 @@ const events = [
     },
     "event_type": "CreateUser",
     "user": "admin",
-    "@timestamp": "2025-08-20T09:10:00Z",
+    "@timestamp": "2025-08-23T09:10:00Z",
     "raw": {
       "eventName": "CreateUser",
       "requestParameters": { "userName": "temp-user" }
@@ -46,7 +46,7 @@ const events = [
     "ip": "198.51.100.23",
     "status": "Success",
     "workload": "Exchange",
-    "@timestamp": "2025-08-20T10:05:00Z"
+    "@timestamp": "2025-08-23T10:05:00Z"
   },
   {
     "tenant": "demoA",
@@ -57,7 +57,7 @@ const events = [
     "host": "DC01",
     "ip": "203.0.113.77",
     "logon_type": 3,
-    "@timestamp": "2025-08-20T11:11:11Z"
+    "@timestamp": "2025-08-23T11:11:11Z"
   }
 ];
 

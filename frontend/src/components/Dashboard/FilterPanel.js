@@ -1,13 +1,12 @@
 'use client';
 import { useState } from 'react';
 
-export default function FilterPanel({ onFilterChange, tenants = [] }) {
+export default function FilterPanel({ onFilterChange, logTypes = [], sources = [] }) {
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
     tenant: '',
-    source: '',
-    eventType: ''
+    source: ''
   });
 
   const handleFilterChange = (key, value) => {
@@ -21,8 +20,7 @@ export default function FilterPanel({ onFilterChange, tenants = [] }) {
       startDate: '',
       endDate: '',
       tenant: '',
-      source: '',
-      eventType: ''
+      source: ''
     };
     setFilters(emptyFilters);
     onFilterChange(emptyFilters);
@@ -31,7 +29,7 @@ export default function FilterPanel({ onFilterChange, tenants = [] }) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-800">🔍 ตัวกรองข้อมูล</h3>
+        <h3 className="font-semibold text-gray-800">ตัวกรองข้อมูล</h3>
         <button
           onClick={resetFilters}
           className="text-sm text-gray-600 hover:text-gray-800"
@@ -40,7 +38,7 @@ export default function FilterPanel({ onFilterChange, tenants = [] }) {
         </button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             วันที่เริ่มต้น
@@ -75,9 +73,8 @@ export default function FilterPanel({ onFilterChange, tenants = [] }) {
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">ทั้งหมด</option>
-            {tenants.map(tenant => (
-              <option key={tenant} value={tenant}>{tenant}</option>
-            ))}
+            <option value="demoA">demoA</option>
+            <option value="demoB">demoB</option>
           </select>
         </div>
         
@@ -91,26 +88,13 @@ export default function FilterPanel({ onFilterChange, tenants = [] }) {
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">ทั้งหมด</option>
+            <option value="api">api</option>
             <option value="crowdstrike">crowdstrike</option>
+            <option value="aws">aws</option>
+            <option value="m365">m365</option>
             <option value="ad">ad</option>
-            <option value="firewall">firewall</option>
             <option value="network">network</option>
-          </select>
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Event Type
-          </label>
-          <select
-            value={filters.eventType}
-            onChange={(e) => handleFilterChange('eventType', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">ทั้งหมด</option>
-            <option value="malware_detected">malware_detected</option>
-            <option value="LogonFailed">LogonFailed</option>
-            <option value="link-down">link-down</option>
+            <option value="firewall">firewall</option>
           </select>
         </div>
       </div>

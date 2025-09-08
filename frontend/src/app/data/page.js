@@ -198,22 +198,11 @@ export default function Page() {
                         <th className='px-4 py-3 text-left font-medium text-gray-700 border-b'>User</th>
                         <th className='px-4 py-3 text-left font-medium text-gray-700 border-b'>Host</th>
                         <th className='px-4 py-3 text-left font-medium text-gray-700 border-b'>Cloud Info</th>
-                        <th className='px-4 py-3 text-left font-medium text-gray-700 border-b'>Content</th>
+                        <th className='px-4 py-3 text-left font-medium text-gray-700 border-b'>Raw</th>
                       </tr>
                     </thead>
                     <tbody>
                       {currentLogs.map((log, idx) => {
-                        // Parse cloud info from message/raw_data
-                        let cloudInfo = null;
-                        try {
-                          const messageData = typeof log.message === 'string' ? JSON.parse(log.message) : log.message;
-                          if (messageData?.cloud) {
-                            cloudInfo = messageData.cloud;
-                          }
-                        } catch (e) {
-                          // Not JSON or no cloud info
-                        }
-
                         return (
                           <tr key={log.id || idx} className='hover:bg-gray-50'>
                             <td className='px-4 py-3 text-gray-800 whitespace-nowrap border-b border-gray-100'>
@@ -254,11 +243,11 @@ export default function Page() {
                             <td className='px-4 py-3 text-gray-800 border-b border-gray-100'>{log.user || '-'}</td>
                             <td className='px-4 py-3 text-gray-800 border-b border-gray-100'>{log.host || '-'}</td>
                             <td className='px-4 py-3 border-b border-gray-100'>
-                              {cloudInfo ? (
+                              {log.cloud ? (
                                 <div className='text-xs bg-blue-50 p-2 rounded'>
-                                  <div><strong>Service:</strong> {cloudInfo.service}</div>
-                                  <div><strong>Account:</strong> {cloudInfo.account_id}</div>
-                                  <div><strong>Region:</strong> {cloudInfo.region}</div>
+                                  <div><strong>Service:</strong> {log.cloud.service}</div>
+                                  <div><strong>Account:</strong> {log.cloud.account_id}</div>
+                                  <div><strong>Region:</strong> {log.cloud.region}</div>
                                 </div>
                               ) : '-'}
                             </td>

@@ -1,126 +1,96 @@
 const connection = require('../db');
 
-// Data retention policy - เก็บข้อมูล 7 วัน
-const RETENTION_DAYS = 7;
+// Data retention policy
+const RETENTION_LOG_DAYS = 7;
+const RETENTION_ALERT_DAYS = 30;
 
-// ฟังก์ชันลบข้อมูลเก่า
+// helper: แปลงวันที่ย้อนหลัง n วันเป็น string สำหรับ SQL
+function getPastDateStr(days) {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+// ลบ logs/alerts เก่า
 async function cleanupOldLogs() {
   try {
-    // คำนวณวันที่ย้อนหลัง 7 วัน
-    const retentionDate = new Date();
-    retentionDate.setDate(retentionDate.getDate() - RETENTION_DAYS);
-    const retentionDateStr = retentionDate.toISOString().slice(0, 19).replace('T', ' ');
+    // ลบ logs เก่า
+    const logsDateStr = getPastDateStr(RETENTION_LOG_DAYS);
+    const [logsResult] = await connection.query(
+      'DELETE FROM logs WHERE created_at < ?',
+      [logsDateStr]
+    );
 
-    // ลบ logs เก่าจาก logs table
-    const [logsResult] = await connection.query(`
-      DELETE FROM logs 
-      WHERE created_at < ?
-    `, [retentionDateStr]);
-    
-    // ลบ alerts เก่าจาก alerts table (เก็บ 30 วัน)
-    const alertRetentionDate = new Date();
-    alertRetentionDate.setDate(alertRetentionDate.getDate() - 30);
-    const alertRetentionDateStr = alertRetentionDate.toISOString().slice(0, 19).replace('T', ' ');
-    
-    const [alertsResult] = await connection.query(`
-      DELETE FROM alerts 
-      WHERE created_at < ?
-    `, [alertRetentionDateStr]);
-    
-    console.log(`✅ Cleanup completed:`);
-    console.log(`   - Deleted ${logsResult.affectedRows} logs older than ${RETENTION_DAYS} days`);
-    console.log(`   - Deleted ${alertsResult.affectedRows} alerts older than 30 days`);
-    
-    // Optional: OPTIMIZE TABLE เพื่อคืนพื้นที่ disk
+    // ลบ alerts เก่า
+    const alertsDateStr = getPastDateStr(RETENTION_ALERT_DAYS);
+    const [alertsResult] = await connection.query(
+      'DELETE FROM alerts WHERE created_at < ?',
+      [alertsDateStr]
+    );
+
+    // Optimize tables
     await connection.query('OPTIMIZE TABLE logs');
     await connection.query('OPTIMIZE TABLE alerts');
-    console.log(`🔧 Database tables optimized`);
-    
+
+    console.log(`✅ Cleanup done: ${logsResult.affectedRows} logs, ${alertsResult.affectedRows} alerts removed`);
   } catch (err) {
     console.error('❌ Error during cleanup:', err);
   }
 }
 
-// ฟังก์ชันดูขนาดข้อมูลปัจจุบัน
+// ดูขนาดและจำนวนข้อมูลปัจจุบัน
 async function getDataSizeInfo() {
   try {
-    // นับจำนวน logs ทั้งหมด
     const [totalLogs] = await connection.query('SELECT COUNT(*) as count FROM logs');
-    
-    // นับจำนวน logs ใน 7 วันล่าสุด
-    const retentionDate = new Date();
-    retentionDate.setDate(retentionDate.getDate() - RETENTION_DAYS);
-    const retentionDateStr = retentionDate.toISOString().slice(0, 19).replace('T', ' ');
-    
-    const [recentLogs] = await connection.query(`
-      SELECT COUNT(*) as count FROM logs WHERE created_at >= ?
-    `, [retentionDateStr]);
-    
-    const [oldLogs] = await connection.query(`
-      SELECT COUNT(*) as count FROM logs WHERE created_at < ?
-    `, [retentionDateStr]);
-    
-    // นับจำนวน alerts
+    const [recentLogs] = await connection.query(
+      'SELECT COUNT(*) as count FROM logs WHERE created_at >= ?',
+      [getPastDateStr(RETENTION_LOG_DAYS)]
+    );
     const [totalAlerts] = await connection.query('SELECT COUNT(*) as count FROM alerts');
-    
-    // ข้อมูลขนาดตาราง
+
     const [tableSize] = await connection.query(`
-      SELECT 
-        table_name as tableName,
-        ROUND(((data_length + index_length) / 1024 / 1024), 2) as sizeMB
-      FROM information_schema.TABLES 
-      WHERE table_schema = 'logdb' 
-        AND table_name IN ('logs', 'alerts')
+      SELECT table_name AS tableName,
+             ROUND((data_length + index_length)/1024/1024, 2) AS sizeMB
+      FROM information_schema.TABLES
+      WHERE table_schema = 'logdb' AND table_name IN ('logs','alerts')
       ORDER BY (data_length + index_length) DESC
     `);
-    
+
     const info = {
       totalLogs: totalLogs[0].count,
       recentLogs: recentLogs[0].count,
-      oldLogs: oldLogs[0].count,
+      oldLogs: totalLogs[0].count - recentLogs[0].count,
       totalAlerts: totalAlerts[0].count,
-      retentionDays: RETENTION_DAYS,
       tablesSizeMB: tableSize
     };
-    
-    console.log('Database Statistics:');
-    console.log(`   - Total logs: ${info.totalLogs.toLocaleString()}`);
-    console.log(`   - Recent logs (${RETENTION_DAYS} days): ${info.recentLogs.toLocaleString()}`);
-    console.log(`   - Old logs (ready for cleanup): ${info.oldLogs.toLocaleString()}`);
-    console.log(`   - Total alerts: ${info.totalAlerts.toLocaleString()}`);
-    console.log(`   - Tables size:`, info.tablesSizeMB);
-    
+
+    console.log('📊 Database stats:', info);
     return info;
-    
   } catch (err) {
     console.error('❌ Error getting data size info:', err);
     return null;
   }
 }
 
-// เริ่มต้น retention service
+// เริ่ม retention service
 function startRetentionService() {
+  console.log(`🚀 Starting Retention Service - Logs ${RETENTION_LOG_DAYS} days, Alerts ${RETENTION_ALERT_DAYS} days`);
+
   // รันทันที
-  console.log('🚀 Starting Data Retention Service...');
   getDataSizeInfo();
-  
-  // รันการทำความสะอาดทุกวันที่ 02:00 น. (7200000 ms = 2 hours)
-  // สำหรับ demo ให้รันทุก 30 นาที (1800000 ms)
-  const CLEANUP_INTERVAL = 30 * 60 * 1000; // 30 minutes
-  
+
+  // ตั้ง interval สำหรับ cleanup (demo: ทุก 30 นาที)
+  const INTERVAL = 30 * 60 * 1000;
   setInterval(async () => {
-    console.log('🕐 Running scheduled cleanup...');
+    console.log('🕐 Scheduled cleanup...');
     await getDataSizeInfo();
     await cleanupOldLogs();
-  }, CLEANUP_INTERVAL);
-  
-  console.log(`⏰ Retention service scheduled - cleanup every 30 minutes`);
-  console.log(`📝 Retention policy: Keep logs for ${RETENTION_DAYS} days, alerts for 30 days`);
+  }, INTERVAL);
 }
 
-
+// สำหรับรันด้วยมือ
 async function manualCleanup() {
-  console.log('🔧 Manual cleanup initiated...');
+  console.log('🔧 Manual cleanup...');
   await getDataSizeInfo();
   await cleanupOldLogs();
   await getDataSizeInfo();
@@ -131,5 +101,5 @@ module.exports = {
   cleanupOldLogs,
   getDataSizeInfo,
   manualCleanup,
-  RETENTION_DAYS
+  RETENTION_LOG_DAYS
 };

@@ -44,7 +44,7 @@ async function checkFailedLoginAttempts() {
           VALUES (?, ?, ?, ?, NOW())
         `, [
           'failed_login_attempts',
-          `Detected ${login.attempt_count} failed logins from IP ${login.ip} (${login.tenant_name || 'Unknown'})`,
+          `พบ ${login.attempt_count} ล็อคอินล้มเหลว จาก IP ${login.ip} (${login.tenant_name || 'Unknown'})`,
           login.ip,
           JSON.stringify({
             attempt_count: login.attempt_count,

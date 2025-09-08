@@ -32,7 +32,7 @@ const events = [
     },
     "event_type": "CreateUser",
     "user": "admin",
-    "@timestamp": "2025-08-23T09:10:00Z",
+    "@timestamp": "2025-08-19T09:10:00Z",
     "raw": {
       "eventName": "CreateUser",
       "requestParameters": { "userName": "temp-user" }
@@ -46,7 +46,7 @@ const events = [
     "ip": "198.51.100.23",
     "status": "Success",
     "workload": "Exchange",
-    "@timestamp": "2025-08-23T10:05:00Z"
+    "@timestamp": "2025-08-19T10:05:00Z"
   },
   {
     "tenant": "demoA",
@@ -57,7 +57,7 @@ const events = [
     "host": "DC01",
     "ip": "203.0.113.77",
     "logon_type": 3,
-    "@timestamp": "2025-08-23T11:11:11Z"
+    "@timestamp": "2025-08-19T11:11:11Z"
   }
 ];
 
@@ -87,8 +87,6 @@ async function sendAll(events) {
     await sendOne(ev);
   }
 
-  // ถ้าอยากยิงพร้อมกัน ใช้ Promise.all
-  // await Promise.all(events.map(ev => sendOne(ev)));
 }
 
 // เริ่มส่งทั้งหมด

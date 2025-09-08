@@ -54,29 +54,28 @@ async function getSourceId(sourceName) {
 app.post('/ingest', async (req, res) => {
   let data = req.body;
   if (Array.isArray(data)) data = data[0];
-
+  console.log(data);
   const logType = data.log_type || 'tenant';
   const rawLog = data.raw || data.log || JSON.stringify(data);
+  let logData = {}; // Initialize logData outside switch
 
   try {
-    let logData;
-
     switch (logType) {
       case 'network': {
         const parsed = parseNetworkLog(rawLog);
         data = { ...data, ...parsed };
-
+        console.log("parsed:",data);
         const sourceId = await getSourceId(data.log_type);
         data = { ...data, source_id: sourceId };
 
         logData = {
           timestamp: data['@timestamp'] ? new Date(data['@timestamp']) : new Date(),
           source_id: data.source_id,
-          host: data.hostname,
-          interface: data.interface,
-          event_type: data['link-down'],
-          event_subtype: data.reason,
-          mac: data.mac,
+          host: data.hostname || null,
+          interface: data.interface || null,
+          event_type: data.event || null,
+          event_subtype: data.reason || null,
+          mac: data.mac || null,
           log_type: logType,
           raw_data: rawLog,
         };
@@ -111,14 +110,14 @@ app.post('/ingest', async (req, res) => {
         logData = {
           timestamp: data['@timestamp'] ? new Date(data['@timestamp']) : new Date(),
           source_id: data.source_id,
-          host: data.hostname,
-          action: data.action,
-          src_ip: data.src,
-          dst_ip: data.dst,
-          src_port: data.spt,
-          dst_port: data.dpt,
-          protocol: data.proto,
-          event_type: data.msg,
+          host: data.hostname || null,
+          action: data.action || null,
+          src_ip: data.src || null,
+          dst_ip: data.dst || null,
+          src_port: data.spt || null,
+          dst_port: data.dpt || null,
+          protocol: data.proto || null,
+          event_type: data.msg || null,
           log_type: logType,
           raw_data: rawLog,
         };
@@ -155,12 +154,12 @@ app.post('/ingest', async (req, res) => {
           timestamp: data['@timestamp'] ? new Date(data['@timestamp']) : new Date(),
           tenant_id: data.tenant_id,
           source_id: data.source_id,
-          event_type: data.event_type,
-          severity: data.severity,
-          src_ip: data.ip,
-          user: data.user,
-          host: data.host,
-          action: data.action,
+          event_type: data.event_type || null,
+          severity: data.severity || null,
+          src_ip: data.ip || null,
+          user: data.user || null,
+          host: data.host || null,
+          action: data.action || null,
           cloud: data.cloud ? JSON.stringify(data.cloud) : null,
           log_type: 'tenant',
           raw_data: rawLog,
@@ -191,6 +190,7 @@ app.post('/ingest', async (req, res) => {
     }
 
     res.json({ status: 'ok', data: logData });
+    
   } catch (err) {
     console.error('Error inserting log:', err);
     res.status(500).json({ status: 'error', message: err.message });

@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS logs (
     timestamp DATETIME,
     tenant_id INT NULL,
     source_id INT NOT NULL,
-    log_type NOT NULL,
+    log_type VARCHAR(50) NOT NULL,
     event_type VARCHAR(100),
     event_subtype VARCHAR(100),
     severity INT DEFAULT NULL,

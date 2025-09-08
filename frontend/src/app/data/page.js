@@ -141,7 +141,7 @@ export default function Page() {
         <div className='flex-1 flex flex-col overflow-hidden'>
           <div className='p-4 bg-white border-b border-gray-200'>
             <h1 className='text-2xl font-bold text-gray-800'>
-              📋 Logs ({filteredLogs.length} total)
+              Logs ({filteredLogs.length} รายการ)
             </h1>
           </div>
 

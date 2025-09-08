@@ -26,12 +26,11 @@ async function writeLog(filePath, message) {
   }
 }
 
-// สร้าง logs พร้อมกัน
+// สร้าง logs
 async function main() {
-  await Promise.all([
-    writeLog(networkLogPath, networkLog),
-    writeLog(firewallLogPath, firewallLog)
-  ]);
+  await writeLog(networkLogPath, networkLog);
+  await writeLog(firewallLogPath, firewallLog);
 }
 
+// เริ่มเขียน log
 main();

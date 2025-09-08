@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS tenants (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
-    description VARCHAR(200),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -25,7 +24,6 @@ CREATE TABLE IF NOT EXISTS tenants (
 CREATE TABLE IF NOT EXISTS sources (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
-    description VARCHAR(200),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -33,36 +31,29 @@ CREATE TABLE IF NOT EXISTS sources (
 CREATE TABLE IF NOT EXISTS logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     timestamp DATETIME,
-    tenant_id INT NULL,                    -- FK to tenants (NULL = system logs)
-    source_id INT NOT NULL,                -- FK to sources
-    log_type ENUM('tenant', 'firewall', 'network', 'system') NOT NULL DEFAULT 'tenant',
-    
-    -- Common fields
+    tenant_id INT NULL,
+    source_id INT NOT NULL,
+    log_type NOT NULL,
     event_type VARCHAR(100),
+    event_subtype VARCHAR(100),
     severity INT DEFAULT NULL,
     message TEXT,
     src_ip VARCHAR(50),
     dst_ip VARCHAR(50),
     user VARCHAR(100),
     host VARCHAR(100),
-    
-    -- Firewall specific (เก็บใน JSON หรือ columns)
     action VARCHAR(50),
     src_port INT,
     dst_port INT,
     protocol VARCHAR(20),
     rule_name VARCHAR(100),
     rule_id VARCHAR(100),
-    
-    -- Network specific
     interface VARCHAR(50),
     mac VARCHAR(50),
-    
-    -- Raw data และ metadata
-    raw_data TEXT,                         -- Original log message
-    tags JSON,                             -- Flexible tags
-    
+    raw_data TEXT,                         -- Original log message                         -- Flexible tags
+    cloud JSON,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
     
     -- Foreign Keys
     FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,

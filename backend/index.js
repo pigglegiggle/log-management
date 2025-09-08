@@ -44,7 +44,4 @@ startRetentionService();
 // เริ่มต้น server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
-  console.log('Database connection ready.');
-  console.log('🔒 Security monitoring active');
-  console.log('🗑️  Data retention service active');
 });

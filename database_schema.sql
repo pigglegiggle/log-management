@@ -90,17 +90,6 @@ CREATE TABLE IF NOT EXISTS alerts (
     INDEX idx_created_at (created_at)
 );
 
--- Insert default data
-INSERT IGNORE INTO tenants (name) VALUES 
-('demoA'),
-('demoB');
-
-INSERT IGNORE INTO sources (name) VALUES 
-('ad'),
-('firewall'),
-('network'),
-('web'),
-('database');
 
 -- Insert users with bcrypt hashed passwords
 INSERT IGNORE INTO users (username, password, role) VALUES 

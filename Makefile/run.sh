@@ -2,7 +2,42 @@
 set -e
 
 # ---------------------------
-# Main .env (สำหรับ docker-compose)
+# Mai# ---------------------------
+# รอ MySQL พร้อม (ใช้ root user)
+# ---------------------------
+echo "⏳ Waiting for MySQL to be ready..."
+until docker-compose exec -T db mysql -u root -p1234 -e "SELECT 1;" &>/dev/null; do
+  echo "  Still waiting for MySQL..."
+  sleep 3
+done
+echo "✅ MySQL is ready!"
+
+# ---------------------------
+# Stop backend และ ingest ก่อนสร้าง schema
+# ---------------------------
+echo "🛑 Stopping backend and ingest services..."
+docker-compose stop backend ingest
+
+# ---------------------------
+# รัน database_schema.sql (ใช้ root user)
+# ---------------------------
+echo "📄 Creating database schema..."
+docker-compose exec -T db mysql -u root -p1234 logdb < database_schema.sql
+echo "✅ Database schema applied"
+
+# ---------------------------
+# Force recreate backend และ ingest
+# ---------------------------
+echo "🚀 Force recreating backend and ingest services..."
+docker-compose rm -f backend ingest
+docker-compose up -d backend ingest
+echo "✅ Services recreated"
+
+# ---------------------------
+# รอ services พร้อม
+# ---------------------------
+echo "⏳ Waiting for services to start..."
+sleep 10docker-compose)
 # ---------------------------
 cat <<EOL > .env
 MYSQL_DATABASE=logdb
@@ -66,15 +101,16 @@ echo "✅ MySQL is ready!"
 # รัน database_schema.sql
 # ---------------------------
 echo "📄 Creating database schema..."
-docker-compose exec -T db mysql -u demo -p1234 logdb < database_schema.sql
+docker-compose exec -T db mysql -u root -p1234 logdb < database_schema.sql
 echo "✅ Database schema applied"
 
 # ---------------------------
 # Test services
 # ---------------------------
-sleep 5
+echo "🔍 Testing services..."
 curl -s http://localhost:3002/ >/dev/null && echo "✓ Backend is responding" || echo "⚠ Backend not responding yet"
 curl -s http://localhost:3000/health >/dev/null && echo "✓ Ingest is responding" || echo "⚠ Ingest not responding yet"
+curl -s http://localhost:3001/ >/dev/null && echo "✓ Frontend is responding" || echo "⚠ Frontend not responding yet"
 
 echo ""
 echo "=== Clean Rebuild Completed ==="

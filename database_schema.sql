@@ -1,6 +1,3 @@
--- Simple Log Management Database Schema (KISS Principle)
--- Single source of truth with proper foreign keys
-
 CREATE DATABASE IF NOT EXISTS logdb;
 USE logdb;
 

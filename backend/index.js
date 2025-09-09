@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3002;
 const app = express();
 
 app.use(cors({
-    origin: 'https://log.sinpw.site',
+    origin: ['https://log.sinpw.site', 'http://localhost:3001'],
     methods: ['GET','POST','PUT','DELETE'],
     credentials: true
 }));

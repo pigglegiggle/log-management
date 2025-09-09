@@ -50,10 +50,10 @@
 
 ### 5.1 Access Control Matrix
 ```
-Role     | Access Level              | Data Scope
----------|---------------------------|---------------------------
-admin    | Full system access        | All tenants, all logs
-tenant   | Limited to own data       | Own tenant logs only
+Role     | Access Level              |
+---------|---------------------------|
+admin    | เข้าถึงได้ทุกอย่าง             |
+tenant   | เข้าถึงได้แค่ข้อมูลตัวเอง        |
 ```
 
 ### 5.2 Tenant Data Isolation
@@ -86,11 +86,6 @@ logs table structure:
 4. Logs automatically assigned to tenant via source mapping
 ```
 
-### 5.6 Log-to-Tenant Mapping
-- **Network/Firewall logs**: ไม่มี tenant_id (shared infrastructure)
-- **Tenant logs**: มี tenant_id จาก API payload
-- **Source mapping**: ใช้ source_id เพื่อระบุประเภท log
-
 ## 6. Indexes ที่มีใน Database
 
 ### ตาราง `logs`
@@ -111,7 +106,6 @@ logs table structure:
 - JWT token-based authentication
 - Role-based access control (RBAC)
 - Query-level tenant filtering
-- Input validation และ sanitization
 
 ### 7.2 Data Retention Policy
 - **Logs**: เก็บ 7 วัน (automatic cleanup)

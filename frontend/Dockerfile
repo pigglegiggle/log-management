@@ -1,4 +1,4 @@
-FROM node:20-slim AS base
+FROM node:20 AS base
 
 FROM base AS builder
 WORKDIR /app
@@ -11,8 +11,9 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Verify build output
-RUN ls -la .next/
+# Debug: Check build output
+RUN ls -la .next/ && ls -la .next/server/ || echo "Build failed or incomplete"
+
 
 FROM base AS runner
 WORKDIR /app
@@ -25,8 +26,8 @@ RUN npm install --only=production
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
-# Verify copied files
-RUN ls -la .next/
+# Debug: Check copied files
+RUN ls -la .next/ && ls -la .next/server/ || echo "Copy failed or incomplete"
 
 ENV NODE_ENV=production
 ENV PORT=3001

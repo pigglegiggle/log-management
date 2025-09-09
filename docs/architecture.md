@@ -18,7 +18,7 @@
 
 ## 2. Tech Stack
 
-| Component        | Technology / Tools             | Port / Notes                   |
+| Component        | Technology / Tools             | Port                        |
 |-----------------|-------------------------------|--------------------------------|
 | Frontend UI      | Next.js + Next.js             | 3001 (HTTP)                    |
 | Backend API      | Node.js + Express             | 3002 (HTTP, REST API)          |

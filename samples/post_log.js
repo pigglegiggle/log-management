@@ -1,8 +1,13 @@
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 
-const url = 'http://localhost:3000/ingest';
+// ใช้ environment variable หรือ default เป็น localhost
+const baseUrl = process.env.INGEST_URL || 'http://localhost:3000';
+const url = `${baseUrl}/ingest`;
 const eventsFile = path.join(__dirname, 'tenants.json');
+
+console.log(`🎯 Target URL: ${url}`);
 
 // โหลด events จากไฟล์
 function loadEvents() {

@@ -1,0 +1,15 @@
+{
+  "name": "log-management-samples",
+  "version": "1.0.0",
+  "description": "Sample scripts for log management system",
+  "main": "post_log.js",
+  "scripts": {
+    "post": "node post_log.js",
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}

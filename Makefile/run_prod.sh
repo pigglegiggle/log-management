@@ -2,13 +2,19 @@
 set -e
 
 # ---------------------------
-# สร้าง .env files
+# Production Environment Setup
 # ---------------------------
-echo "📝 Creating environment files..."
+echo "🚀 Setting up PRODUCTION environment..."
+
+# ---------------------------
+# สร้าง .env files สำหรับ production
+# ---------------------------
+echo "📝 Creating production environment files..."
 
 cat <<EOL > .env
 MYSQL_DATABASE=logdb
 MYSQL_ROOT_PASSWORD=1234
+INGEST_URL=http://13.229.103.7:3000
 EOL
 
 cat <<EOL > backend/.env
@@ -17,7 +23,7 @@ DB_NAME=logdb
 DB_HOST=db
 DB_USER=root
 DB_PASSWORD=1234
-JWT_SECRET=logdemo_secret
+JWT_SECRET=logdemo_secret_prod
 NODE_ENV=production
 PORT=3002
 EOL
@@ -33,19 +39,31 @@ PORT=3000
 EOL
 
 cat <<EOL > frontend/.env
-NEXT_PUBLIC_API_URL=http://localhost:3002
+NEXT_PUBLIC_API_URL=http://13.229.103.7:3002
 NODE_ENV=production
 PORT=3001
+INGEST_URL=http://13.229.103.7:3000
 EOL
 
 # ---------------------------
-# เริ่มระบบแบบ clean
+# Samples .env และติดตั้ง dependencies
+# ---------------------------
+cat <<EOL > samples/.env
+INGEST_URL=http://13.229.103.7:3000
+EOL
+
+echo "📦 Installing samples dependencies..."
+cd samples && npm install --silent --production && cd ..
+echo "✅ Samples ready"
+
+# ---------------------------
+# เริ่มระบบแบบ production (clean rebuild)
 # ---------------------------
 echo "🧹 Cleaning up old containers..."
 docker-compose down -v --rmi all --remove-orphans
 
-echo "🔨 Building and starting services..."
-docker-compose up -d --build
+echo "🔨 Building and starting services for production..."
+docker-compose up -d --build --force-recreate
 
 # ---------------------------
 # รอ MySQL พร้อม
@@ -75,18 +93,19 @@ echo "✅ Services restarted"
 # รอให้ทุก services พร้อม
 # ---------------------------
 echo "⏳ Waiting for all services to be ready..."
-sleep 8
+sleep 10
 
 # ---------------------------
 # ตรวจสอบ services
 # ---------------------------
 echo "🔍 Testing services..."
 curl -s http://localhost:3002/ >/dev/null && echo "✓ Backend is responding" || echo "⚠ Backend not responding yet"
-curl -s http://localhost:3000/health >/dev/null && echo "✓ Ingest is responding" || echo "⚠ Ingest not responding yet"  
+curl -s http://localhost:3000/ingest -X POST -H "Content-Type: application/json" -d '{}' >/dev/null 2>&1 && echo "✓ Ingest is responding" || echo "⚠ Ingest not responding yet"  
 curl -s http://localhost:3001/ >/dev/null && echo "✓ Frontend is responding" || echo "⚠ Frontend not responding yet"
 
 echo ""
-echo "🎉 System is ready!"
-echo "   Frontend: http://localhost:3001"
-echo "   Backend:  http://localhost:3002"
-echo "   Ingest:   http://localhost:3000"
+echo "🎉 PRODUCTION environment is ready!"
+echo "   Frontend: http://13.229.103.7:3001"
+echo "   Backend:  http://13.229.103.7:3002"
+echo "   Ingest:   http://13.229.103.7:3000"
+echo ""

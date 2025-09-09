@@ -44,10 +44,3 @@
 | 3001/TCP        | Frontend UI (HTTP)               |
 | 3002/TCP        | Backend API (HTTP)               |
 | 3306/TCP        | MySQL Database (internal)        |
-
-## 5. ฟีเจอร์หลัก
-- การจัดการ log แบบ multi-tenant  
-- Role-based access & JWT auth  
-- การ ingest log และ dashboard แบบ real-time  
-- การเก็บข้อมูล: logs 7 วัน, alerts 30 วัน  
-- Manual & automatic cleanup  

@@ -12,9 +12,10 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3001',
-    'http://13.229.103.7:3001',
-    'http://13.229.103.7',
-    /^http:\/\/.*:3001$/  // รองรับ IP อื่นๆ ที่ใช้ port 3001
+    'http://localhost:3000',
+    'http://localhost:80',
+    /^http:\/\/.*:3001$/,
+    /^http:\/\/.*:80$/
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

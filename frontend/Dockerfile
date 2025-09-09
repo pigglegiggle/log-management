@@ -1,18 +1,16 @@
-# ใช้ Node LTS
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package.json & package-lock.json
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci --only=production
 
-# Copy source code
 COPY . .
 
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 ENV PORT=3001
+
 EXPOSE 3001
 
-CMD ["npm", "run", "dev", "--", "-p", "3001"]
+CMD ["npm", "start"]

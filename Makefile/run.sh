@@ -2,8 +2,10 @@
 set -e
 
 # ---------------------------
-# Main .env (สำหรับ docker-compose)
+# สร้าง .env files
 # ---------------------------
+echo "📝 Creating environment files..."
+
 cat <<EOL > .env
 MYSQL_DATABASE=logdb
 MYSQL_ROOT_PASSWORD=1234
@@ -11,11 +13,8 @@ MYSQL_USER=demo
 MYSQL_PASSWORD=1234
 EOL
 
-# ---------------------------
-# Backend .env
-# ---------------------------
 cat <<EOL > backend/.env
-DATABASE_URL=mysql://root:1234@db:3306/logdb
+DATABASE_URL=mysql://demo:1234@db:3306/logdb
 DB_NAME=logdb
 DB_HOST=db
 DB_USER=demo
@@ -25,11 +24,8 @@ NODE_ENV=production
 PORT=3002
 EOL
 
-# ---------------------------
-# Ingest .env
-# ---------------------------
 cat <<EOL > ingest/.env
-DATABASE_URL=mysql://root:1234@db:3306/logdb
+DATABASE_URL=mysql://demo:1234@db:3306/logdb
 DB_NAME=logdb
 DB_HOST=db
 DB_USER=demo
@@ -38,9 +34,6 @@ NODE_ENV=production
 PORT=3000
 EOL
 
-# ---------------------------
-# Frontend .env
-# ---------------------------
 cat <<EOL > frontend/.env
 NEXT_PUBLIC_API_URL=http://localhost:3002
 NODE_ENV=production
@@ -48,55 +41,47 @@ PORT=3001
 EOL
 
 # ---------------------------
-# Clean rebuild และรัน Docker Compose
+# เริ่มระบบแบบ clean
 # ---------------------------
+echo "🧹 Cleaning up old containers..."
 docker-compose down -v --rmi all --remove-orphans
+
+echo "🔨 Building and starting services..."
 docker-compose up -d --build --force-recreate
 
 # ---------------------------
-# รอ MySQL พร้อม (ใช้ root user)
+# รอ MySQL พร้อม
 # ---------------------------
 echo "⏳ Waiting for MySQL to be ready..."
 until docker-compose exec -T db mysql -u root -p1234 -e "SELECT 1;" &>/dev/null; do
   echo "  Still waiting for MySQL..."
-  sleep 3
+  sleep 2
 done
 echo "✅ MySQL is ready!"
 
 # ---------------------------
-# Stop backend และ ingest ก่อนสร้าง schema
+# สร้าง database schema
 # ---------------------------
-echo "🛑 Stopping backend and ingest services..."
-docker-compose stop backend ingest
-
-# ---------------------------
-# รัน database_schema.sql (ใช้ root user)
-# ---------------------------
-echo "📄 Creating database schema..."
+echo "📄 Setting up database schema..."
 docker-compose exec -T db mysql -u root -p1234 logdb < database_schema.sql
 echo "✅ Database schema applied"
 
 # ---------------------------
-# Force recreate backend และ ingest
+# รอให้ทุก services พร้อม
 # ---------------------------
-echo "🚀 Force recreating backend and ingest services..."
-docker-compose rm -f backend ingest
-docker-compose up -d backend ingest
-echo "✅ Services recreated"
+echo "⏳ Waiting for all services to be ready..."
+sleep 5
 
 # ---------------------------
-# รอ services พร้อม
-# ---------------------------
-echo "⏳ Waiting for services to start..."
-sleep 10
-
-# ---------------------------
-# Test services
+# ตรวจสอบ services
 # ---------------------------
 echo "🔍 Testing services..."
 curl -s http://localhost:3002/ >/dev/null && echo "✓ Backend is responding" || echo "⚠ Backend not responding yet"
-curl -s http://localhost:3000/health >/dev/null && echo "✓ Ingest is responding" || echo "⚠ Ingest not responding yet"
+curl -s http://localhost:3000/health >/dev/null && echo "✓ Ingest is responding" || echo "⚠ Ingest not responding yet"  
 curl -s http://localhost:3001/ >/dev/null && echo "✓ Frontend is responding" || echo "⚠ Frontend not responding yet"
 
 echo ""
-echo "=== Clean Rebuild Completed ==="
+echo "🎉 System is ready!"
+echo "   Frontend: http://localhost:3001"
+echo "   Backend:  http://localhost:3002"
+echo "   Ingest:   http://localhost:3000"

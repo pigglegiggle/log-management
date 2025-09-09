@@ -2,7 +2,9 @@
 
 API_URL="http://localhost:3000/ingest"
 
-LOG_FILE="crowdstrike.json"
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG_FILE="$SCRIPT_DIR/crowdstrike.json"
 
 curl -s -X POST "$API_URL" \
      -H "Content-Type: application/json" \

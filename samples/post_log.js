@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch');
 
 const url = 'http://localhost:3000/ingest';
 

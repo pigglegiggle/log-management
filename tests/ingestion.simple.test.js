@@ -6,10 +6,15 @@ describe('Log Ingestion API', () => {
 
   test('ทดสอบเบสิค Log', async () => {
     const testLog = {
-      tenant: 'demoA',
-      source: 'test-source',
-      event_type: 'TestEvent',
-      message: 'This is a test log'
+        tenant: "demoA",
+        source: "crowdstrike",
+        event_type: "malware_detected",
+        host: "WIN10-01",
+        process: "powershell.exe",
+        severity: 8,
+        sha256: "abc...",
+        action: "quarantine",
+        '@timestamp': "2025-08-23T08:00:00Z"
     };
     
     const response = await fetch(`${INGEST_URL}/ingest`, {

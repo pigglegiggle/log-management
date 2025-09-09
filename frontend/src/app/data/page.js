@@ -15,18 +15,19 @@ export default function Page() {
   const [pageSize, setPageSize] = useState(25);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Apply search filter to filtered logs
+  const searchFilteredLogs = filteredLogs.filter(log => 
+    !searchTerm || 
+    Object.values(log).some(value => 
+      value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
   // Pagination logic
-  const totalPages = Math.ceil(filteredLogs.length / pageSize);
+  const totalPages = Math.ceil(searchFilteredLogs.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentLogs = filteredLogs
-    .filter(log => 
-      !searchTerm || 
-      Object.values(log).some(value => 
-        value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    )
-    .slice(startIndex, endIndex);
+  const currentLogs = searchFilteredLogs.slice(startIndex, endIndex);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -122,7 +123,7 @@ export default function Page() {
 
     setFilteredLogs(filtered);
     setCurrentPage(1); // Reset to first page
-    console.log(`Filtered ${filtered.length} logs from ${allLogs.length} total`);
+    setSearchTerm(''); // Reset search when filter changes
   };
 
   return (
@@ -141,7 +142,7 @@ export default function Page() {
         <div className='flex-1 flex flex-col overflow-hidden'>
           <div className='p-4 bg-white border-b border-gray-200'>
             <h1 className='text-2xl font-bold text-gray-800'>
-              Logs ({filteredLogs.length} รายการ)
+              Logs ({searchFilteredLogs.length} รายการ)
             </h1>
           </div>
 
@@ -177,7 +178,7 @@ export default function Page() {
               </select>
             </div>
             <div className='text-sm text-gray-600'>
-              แสดง {startIndex + 1}-{Math.min(endIndex, filteredLogs.length)} จาก {filteredLogs.length} รายการ
+              แสดง {startIndex + 1}-{Math.min(endIndex, searchFilteredLogs.length)} จาก {searchFilteredLogs.length} รายการ
             </div>
           </div>
 
@@ -279,10 +280,10 @@ export default function Page() {
           </div>
 
           {/* Pagination */}
-          {filteredLogs.length > 0 && (
+          {searchFilteredLogs.length > 0 && (
             <div className='p-4 bg-white border-t border-gray-200 flex justify-between items-center'>
               <div className='text-sm text-gray-600'>
-                หน้า {currentPage} จาก {totalPages} (รวม {filteredLogs.length} รายการ)
+                หน้า {currentPage} จาก {totalPages} (รวม {searchFilteredLogs.length} รายการ)
               </div>
               <div className='flex space-x-2'>
                 <button

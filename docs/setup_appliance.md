@@ -16,3 +16,10 @@ cd log-management
 ## เข้าใช้งานหน้าเว็บ
 
 `http://localhost:3001/`
+
+
+## ลองส่ง log เข้าไปใน Project
+
+```javascript
+cd samples && node post_log.js
+```

@@ -8,11 +8,7 @@ const { startRetentionService } = require('./services/retentionService');
 const PORT = process.env.PORT || 3002;
 const app = express();
 
-app.use(cors({
-    origin: ['https://log.sinpw.site', 'http://localhost:3001', 'http://13.229.103.7:3001'],
-    methods: ['GET','POST','PUT','DELETE'],
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 
 // Import routes

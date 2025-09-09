@@ -5,6 +5,7 @@ set -e
 # Script: run.sh
 # Clean rebuild พร้อมสร้าง .env อัตโนมัติ
 # ----------------------------------------
+docker-compose down -v --rmi all --remove-orphans
 
 # ---------------------------
 # Main .env
@@ -26,7 +27,7 @@ DB_HOST=db
 DB_USER=demo
 DB_PASSWORD=1234
 JWT_SECRET=logdemo_secret
-NODE_ENV=development
+NODE_ENV=production
 PORT=3002
 EOL
 
@@ -39,7 +40,7 @@ DB_NAME=logdb
 DB_HOST=db
 DB_USER=demo
 DB_PASSWORD=1234
-NODE_ENV=development
+NODE_ENV=production
 PORT=3000
 EOL
 
@@ -48,7 +49,7 @@ EOL
 # ---------------------------
 cat <<EOL > frontend/.env
 NEXT_PUBLIC_API_URL=http://localhost:3002
-NODE_ENV=development
+NODE_ENV=production
 PORT=3001
 EOL
 

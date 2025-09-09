@@ -5,15 +5,14 @@ const auth = require('./middleware/auth');
 const { startSecurityMonitoring } = require('./services/securityService');
 const { startRetentionService } = require('./services/retentionService');
 
+const PORT = process.env.PORT || 3002;
+const app = express();
+
 app.use(cors({
     origin: 'https://log.sinpw.site',
     methods: ['GET','POST','PUT','DELETE'],
     credentials: true
 }));
-
-const PORT = process.env.PORT || 3002;
-
-app.use(cors());
 app.use(express.json());
 
 // Import routes

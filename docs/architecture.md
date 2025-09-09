@@ -1,7 +1,7 @@
 # ระบบจัดการ Log – สถาปัตยกรรมและ Stack
 
 ## 1. ภาพรวมสถาปัตยกรรม
-
+![architecture diagram](https://i.ibb.co/DDv1fSZb/2568-09-09-22-10-16.png)
 
 ### Data Flow
 1. **Syslog Flow (Network/Firewall)**  

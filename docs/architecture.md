@@ -1,17 +1,7 @@
 # ระบบจัดการ Log – สถาปัตยกรรมและ Stack
 
 ## 1. ภาพรวมสถาปัตยกรรม
-```
-[แหล่ง Syslog] → [Fluent Bit] → [Ingest Service] → [Database] → [Backend API] → [Frontend UI]
-      ↓              ↓ (UDP)           ↓                ↓             ↓              ↓
-   Network         514/515        Port 3000       MySQL 8.0    Port 3002     Next.js
-   Firewall        Syslog         REST API        (logdb)       REST API      React UI
-   Systems         Listener       Parser
-      
-[ระบบ Tenant] → [Direct HTTP] → [Ingest Service] ↗
-      ↓                 ↓
-  AWS/CrowdStrike  JSON Payload
-```
+
 
 ### Data Flow
 1. **Syslog Flow (Network/Firewall)**  
@@ -34,8 +24,8 @@
 | Backend API      | Node.js + Express             | 3002 (HTTP, REST API)          |
 | Ingest Service   | Node.js + Express             | 3000 (HTTP, REST API)          |
 | Syslog Collector | Fluent Bit                    | UDP 514/515                     |
-| Database         | MySQL 8.0                     | logdb, foreign keys & indexes  |
-| Containerization | Docker + Docker Compose       | Multi-service deployment       |
+| Database         | MySQL 8.0                     | 3306                           |
+| Containerization | Docker + Docker Compose       |                           |
 
 ## 3. Database และ Multi-Tenant
 - **ตารางหลัก**: users, tenants, sources, logs, alerts  
@@ -53,7 +43,7 @@
 | 3000/TCP        | Ingest API (HTTP)                |
 | 3001/TCP        | Frontend UI (HTTP)               |
 | 3002/TCP        | Backend API (HTTP)               |
-| 3306/TCP        | MySQL Database (internal only)  |
+| 3306/TCP        | MySQL Database (internal)        |
 
 ## 5. ฟีเจอร์หลัก
 - การจัดการ log แบบ multi-tenant  

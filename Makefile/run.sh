@@ -1,14 +1,8 @@
 #!/bin/bash
 set -e
 
-# ----------------------------------------
-# Script: run.sh
-# Clean rebuild พร้อมสร้าง .env อัตโนมัติ
-# ----------------------------------------
-docker-compose down -v --rmi all --remove-orphans
-
 # ---------------------------
-# Main .env
+# Main .env (สำหรับ docker-compose)
 # ---------------------------
 cat <<EOL > .env
 MYSQL_DATABASE=logdb
@@ -54,9 +48,10 @@ PORT=3001
 EOL
 
 # ---------------------------
-# รัน Docker Compose
+# Clean rebuild และรัน Docker Compose
 # ---------------------------
-docker-compose --env-file .env up -d --build --force-recreate
+docker-compose down -v --rmi all --remove-orphans
+docker-compose up -d --build --force-recreate
 
 # ---------------------------
 # รอ MySQL พร้อม

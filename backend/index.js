@@ -8,7 +8,18 @@ const { startRetentionService } = require('./services/retentionService');
 const PORT = process.env.PORT || 3002;
 const app = express();
 
-app.use(cors());
+// CORS configuration สำหรับ EC2
+app.use(cors({
+  origin: [
+    'http://localhost:3001',
+    'http://13.229.103.7:3001',
+    'http://13.229.103.7',
+    /^http:\/\/.*:3001$/  // รองรับ IP อื่นๆ ที่ใช้ port 3001
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Import routes

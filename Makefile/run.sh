@@ -35,7 +35,7 @@ PORT=3000
 EOL
 
 cat <<EOL > frontend/.env
-NEXT_PUBLIC_API_URL=http://localhost:3002
+NEXT_PUBLIC_API_URL=http://13.229.103.7:3002
 NODE_ENV=production
 PORT=3001
 EOL
@@ -82,6 +82,3 @@ curl -s http://localhost:3001/ >/dev/null && echo "✓ Frontend is responding" |
 
 echo ""
 echo "🎉 System is ready!"
-echo "   Frontend: http://localhost:3001"
-echo "   Backend:  http://localhost:3002"
-echo "   Ingest:   http://localhost:3000"

@@ -1,11 +1,11 @@
-FROM node:20 AS base
+FROM node:20-alpine AS base
 
 FROM base AS builder
 WORKDIR /app
 
 # Install dependencies
 COPY package.json ./
-RUN npm install
+RUN npm install --no-audit --no-fund
 
 # Copy source and build
 COPY . .
@@ -20,7 +20,7 @@ WORKDIR /app
 
 # Copy package.json and install production dependencies
 COPY --from=builder /app/package.json ./
-RUN npm install --only=production
+RUN npm install --omit=dev --no-audit --no-fund
 
 # Copy built application
 COPY --from=builder /app/.next ./.next

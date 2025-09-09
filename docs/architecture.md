@@ -44,3 +44,18 @@
 | 3001/TCP        | Frontend UI (HTTP)               |
 | 3002/TCP        | Backend API (HTTP)               |
 | 3306/TCP        | MySQL Database (internal)        |
+
+
+## 5. Indexes ที่มีใน Database
+
+### ตาราง `logs`
+- `idx_timestamp (timestamp)`  
+- `idx_tenant_id (tenant_id)`  
+- `idx_source_id (source_id)`  
+- `idx_log_type (log_type)`  
+- `idx_event_type (event_type)`  
+- `idx_src_ip (src_ip)`  
+
+### ตาราง `alerts`
+- `idx_alert_type (alert_type)`  
+- `idx_created_at (created_at)`  

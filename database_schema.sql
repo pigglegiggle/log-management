@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS logs (
     INDEX idx_src_ip (src_ip)
 );
 
--- Alerts table (simple)
+
 CREATE TABLE IF NOT EXISTS alerts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     alert_type VARCHAR(100) NOT NULL,

@@ -1,36 +1,44 @@
-const fs = require('fs');
-const path = require('path');
+const dgram = require("dgram");
 
-// ข้อความ log
+// Logs
 const networkLog = '<190>Aug 20 13:01:02 r1 if=ge-0/0/1 event=link-down mac=aa:bb:cc:dd:ee:ff reason=carrier-loss\n';
 const firewallLog = '<134>Aug 20 12:44:56 fw01 vendor=demo product=ngfw action=deny src=10.0.1.10 dst=8.8.8.8 spt=5353 dpt=53 proto=udp msg=DNS blocked policy=Block-DNS\n';
 
-// logs folder อยู่ข้างนอก samples
-const logsDir = path.join(__dirname, '..', 'logs');
+// Host ของ Fluent Bit
+const HOST = "127.0.0.1";
 
-// สร้าง logs folder ถ้ายังไม่มี
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
+// Ports ตาม Fluent Bit config
+const FIREWALL_UDP_PORT = 514;
+const NETWORK_UDP_PORT = 515;
+
+// ฟังก์ชันส่ง UDP พร้อมเลือก port
+function sendUDP(message, port) {
+  return new Promise((resolve, reject) => {
+    const client = dgram.createSocket("udp4");
+    client.send(Buffer.from(message), port, HOST, (err) => {
+      client.close();
+      if (err) return reject(err);
+      console.log(`Sent via UDP port ${port}:`, message.trim());
+      resolve();
+    });
+  });
 }
 
-const networkLogPath = path.join(logsDir, 'network.log');
-const firewallLogPath = path.join(logsDir, 'firewall.log');
-
-// ฟังก์ชัน append log
-async function writeLog(filePath, message) {
+// Main
+async function main() {
   try {
-    await fs.promises.appendFile(filePath, message, 'utf8');
-    console.log(`Log saved to ${filePath}`);
+    console.log("=== Sending UDP logs ===");
+
+    // ส่ง network log ไป port 515
+    await sendUDP(networkLog, NETWORK_UDP_PORT);
+
+    // ส่ง firewall log ไป port 514
+    await sendUDP(firewallLog, FIREWALL_UDP_PORT);
+
+    console.log("All UDP logs sent");
   } catch (err) {
-    console.error('Error writing log:', err);
+    console.error("Error:", err);
   }
 }
 
-// สร้าง logs
-async function main() {
-  await writeLog(networkLogPath, networkLog);
-  await writeLog(firewallLogPath, firewallLog);
-}
-
-// เริ่มเขียน log
 main();

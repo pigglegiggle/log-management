@@ -6,7 +6,9 @@ services:
       - ./fluent-bit:/fluent-bit/config
       - ./logs:/logs
     command: /fluent-bit/bin/fluent-bit -c /fluent-bit/config/fluent-bit.conf
-
+    ports:
+      - "514:514/udp"
+      - "515:515/udp"
   db:
     image: mysql:8.0
     container_name: mysql_db

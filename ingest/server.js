@@ -54,7 +54,7 @@ async function getSourceId(sourceName) {
 app.post('/ingest', async (req, res) => {
   let data = req.body;
   if (Array.isArray(data)) data = data[0];
-  console.log(data);
+  console.log("received:",data);
   const logType = data.log_type || 'tenant';
   const rawLog = data.log || JSON.stringify(data);
   let logData = {}; // Initialize logData outside switch
@@ -64,7 +64,6 @@ app.post('/ingest', async (req, res) => {
       case 'network': {
         const parsed = parseNetworkLog(rawLog);
         data = { ...data, ...parsed };
-        console.log("parsed:",data);
         const sourceId = await getSourceId(data.log_type);
         data = { ...data, source_id: sourceId };
 

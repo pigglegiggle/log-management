@@ -1,6 +1,6 @@
 const express = require('express');
 const auth = require('../middleware/auth');
-const { getDataSizeInfo, manualCleanup, RETENTION_DAYS } = require('../services/retentionService');
+const { getDataSizeInfo, manualCleanup, RETENTION_LOG_DAYS } = require('../services/retentionService');
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.get('/stats', auth, async (req, res) => {
     return res.json({ 
       success: true, 
       retentionPolicy: {
-        logRetentionDays: RETENTION_DAYS,
+        logRetentionDays: RETENTION_LOG_DAYS,
         alertRetentionDays: 30
       },
       stats: stats 

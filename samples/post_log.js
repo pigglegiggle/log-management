@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 const url = 'http://localhost:3000/ingest';
-
 const eventsFile = path.join(__dirname, 'tenants.json');
 
+// โหลด events จากไฟล์
 function loadEvents() {
   try {
     const data = fs.readFileSync(eventsFile, 'utf8');
@@ -15,6 +15,7 @@ function loadEvents() {
   }
 }
 
+// ส่ง event เดียว
 async function sendOne(event) {
   try {
     const response = await fetch(url, {
@@ -28,18 +29,23 @@ async function sendOne(event) {
     }
 
     const text = await response.text();
-    console.log('Sent successfully:', event.source);
+    console.log('✅ Sent successfully:', event.source);
 
   } catch (err) {
-    console.error('Error sending:', event.source, err.message);
+    console.error('❌ Error sending:', event.source, err.message);
   }
 }
 
+// ส่งทีละอันแบบรอให้เสร็จก่อนส่งตัวต่อไป
 async function sendAll(events) {
   for (const ev of events) {
     await sendOne(ev);
   }
+  console.log('🚀 All events sent!');
 }
 
-const events = loadEvents();
-sendAll(events);
+// เริ่มส่ง
+(async () => {
+  const events = loadEvents();
+  await sendAll(events);
+})();

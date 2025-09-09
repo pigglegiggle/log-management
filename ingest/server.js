@@ -54,10 +54,9 @@ async function getSourceId(sourceName) {
 app.post('/ingest', async (req, res) => {
   let data = req.body;
   if (Array.isArray(data)) data = data[0];
-  console.log("received:",data);
   const logType = data.log_type || 'tenant';
   const rawLog = data.log || JSON.stringify(data);
-  let logData = {}; // Initialize logData outside switch
+  let logData = {};
 
   try {
     switch (logType) {

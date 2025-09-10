@@ -2,3 +2,9 @@ log.sinpw.site {
     tls sinpw782@gmail.com
     reverse_proxy frontend:3001
 }
+
+
+log-api.sinpw.site {
+    tls sinpw782@gmail.com
+    reverse_proxy backend:3002
+}

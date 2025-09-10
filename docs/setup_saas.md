@@ -109,9 +109,9 @@ cd ..
 ## การเข้าถึงจากภายนอก
 
 ### URLs สำหรับเข้าถึง
-- **Frontend**: `http://your-ec2-ip:3001`
+- **Frontend**: `http://your-ec2-ip:3001 or your domain`
 - **Backend API**: `http://your-ec2-ip:3002`
-- **Ingest Service**: `http://your-ec2-ip:3000`
+- **Ingest Service**: `http://your-ec2-ip:3000 or your sub domain`
 
 ### Security Group Configuration
 ```
@@ -147,6 +147,10 @@ JWT_SECRET=your_jwt_secret_key
 cat <<EOL > Caddyfile
 your-domain.com {
     reverse_proxy frontend:3001
+}
+
+your-sub-domain.com {
+    reverse_proxy backend:3002
 }
 EOL
 ```

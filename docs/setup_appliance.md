@@ -140,7 +140,7 @@ cd ..
 
 ## การจัดการระบบ
 
-### Environment Modes
+### Setup ระบบ
 ```bash
 # Development mode (แนะนำสำหรับ Local)
 ./Makefile/run_dev.sh
@@ -156,9 +156,6 @@ docker-compose down
 ```bash
 # Development (มี hot reload)
 ./Makefile/run_dev.sh
-
-# Production (optimized)
-./Makefile/run_prod.sh
 ```
 
 ### ดู Logs ของ Services

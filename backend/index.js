@@ -35,6 +35,10 @@ app.use('/api/logs', logsRoutes);
 app.use('/api/alerts', alertsRoutes);
 app.use('/api/retention', retentionRoutes);
 
+app.get('/hello', (req, res) => {
+  res.json({ message: 'Hello from backend!' });
+});
+
 // Protected route
 app.get('/', auth, (req, res) => {
   res.json({

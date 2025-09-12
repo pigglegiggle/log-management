@@ -87,7 +87,6 @@ services:
       - "3001:3001"
     environment:
       - HOST=0.0.0.0
-      - HOSTNAME=0.0.0.0
     env_file:
       - ./frontend/.env
     depends_on:

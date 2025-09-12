@@ -1,15 +1,9 @@
 #!/bin/bash
 set -e
-
-# ---------------------------
-# Production Environment Setup
-# ---------------------------
-echo "🚀 Setting up PRODUCTION environment..."
-
 # ---------------------------
 # สร้าง .env files สำหรับ production
 # ---------------------------
-echo "📝 Creating production environment files..."
+echo "Creating production environment files..."
 
 cat <<EOL > .env
 MYSQL_DATABASE=logdb
@@ -52,23 +46,21 @@ cat <<EOL > samples/.env
 INGEST_URL=http://20.2.210.144:3000
 EOL
 
-echo "📦 Installing samples dependencies..."
 cd samples && npm install --silent --production && cd ..
 echo "✅ Samples ready"
 
 # ---------------------------
 # เริ่มระบบแบบ production (clean rebuild)
 # ---------------------------
-echo "🧹 Cleaning up old containers..."
 docker-compose down -v --rmi all --remove-orphans
+echo "✅ Cleaned old containers"
 
-echo "🔨 Building and starting services for production..."
-docker-compose up -d --build --force-recreate
+docker-compose up -d --build 
+echo "✅ Containers built"
 
 # ---------------------------
 # รอ MySQL พร้อม
 # ---------------------------
-echo "⏳ Waiting for MySQL to be ready..."
 until docker-compose exec -T db mysql -u root -p1234 -e "SELECT 1;" &>/dev/null; do
   echo "  Still waiting for MySQL..."
   sleep 2
@@ -78,14 +70,12 @@ echo "✅ MySQL is ready!"
 # ---------------------------
 # สร้าง database schema
 # ---------------------------
-echo "📄 Setting up database schema..."
 docker-compose exec -T db mysql -u root -p1234 logdb < database_schema.sql
 echo "✅ Database schema applied"
 
 # ---------------------------
 # รีสตาร์ท backend และ ingest เพื่อให้เชื่อมต่อ database ใหม่
 # ---------------------------
-echo "🔄 Restarting backend and ingest services..."
 docker-compose restart backend ingest
 echo "✅ Services restarted"
 
@@ -98,7 +88,7 @@ sleep 10
 # ---------------------------
 # ตรวจสอบ services
 # ---------------------------
-echo "🔍 Testing services..."
+echo "Testing services..."
 curl -s https://api-log.sinpw.site/ >/dev/null && echo "✓ Backend is responding" || echo "⚠ Backend not responding yet"
 curl -s http://localhost:3000/ingest -X POST -H "Content-Type: application/json" -d '{}' >/dev/null 2>&1 && echo "✓ Ingest is responding" || echo "⚠ Ingest not responding yet"  
 curl -s https://log.sinpw.site/ >/dev/null && echo "✓ Frontend is responding" || echo "⚠ Frontend not responding yet"

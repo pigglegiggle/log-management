@@ -1,3 +1,14 @@
+version: "3.9"
+
+networks:
+  app_net:
+    driver: bridge
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:
+
 services:
   fluent-bit:
     image: cr.fluentbit.io/fluent/fluent-bit:latest
@@ -9,6 +20,9 @@ services:
     ports:
       - "514:514/udp"
       - "515:515/udp"
+    networks:
+      - app_net
+
   db:
     image: mysql:8.0
     container_name: mysql_db
@@ -25,6 +39,8 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       timeout: 20s
       retries: 10
+    networks:
+      - app_net
 
   backend:
     build:
@@ -40,6 +56,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - app_net
 
   ingest:
     build:
@@ -57,6 +75,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - app_net
 
   frontend:
     build:
@@ -72,6 +92,8 @@ services:
       - ./frontend/.env
     depends_on:
       - backend
+    networks:
+      - app_net
 
   caddy:
     image: caddy:latest
@@ -85,9 +107,6 @@ services:
       - caddy_config:/config
     depends_on:
       - frontend
-
-volumes:
-  db_data:
-  caddy_data:
-  caddy_config:
-
+      - backend
+    networks:
+      - app_net

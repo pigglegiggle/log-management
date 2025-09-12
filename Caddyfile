@@ -1,10 +1,11 @@
+# Frontend site
 log.sinpw.site {
-    tls sinpw782@gmail.com
     reverse_proxy frontend:3001
+    tls sinpw782@gmail.com
 }
 
-
+# Backend API
 log-api.sinpw.site {
-    tls sinpw782@gmail.com
     reverse_proxy backend:3002
+    tls sinpw782@gmail.com
 }

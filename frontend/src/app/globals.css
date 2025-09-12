@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+/* Set Anuphan as default font family */
+* {
+  font-family: var(--font-anuphan), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Ensure smooth font rendering for Thai text */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

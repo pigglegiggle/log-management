@@ -286,13 +286,6 @@ export default function Page() {
               </div>
             </div>
 
-
-            {/* แสดงข้อความเมื่อไม่มีข้อมูล */}
-            {allLogs.length === 0 && username && (
-              <div className='mt-8 p-6 bg-yellow-50 border border-yellow-200 rounded-lg text-center'>
-                <p className='text-yellow-800 font-medium'>ไม่มีข้อมูล logs ในระบบ</p>
-              </div>
-            )}
           </div>
         </div>
       </div>

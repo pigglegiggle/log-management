@@ -52,8 +52,8 @@ echo "✅ Samples ready"
 # ---------------------------
 # เริ่มระบบแบบ production (clean rebuild)
 # ---------------------------
-docker-compose down -v --rmi all --remove-orphans
-echo "✅ Cleaned old containers"
+docker-compose down -v --rmi local --remove-orphans
+echo "✅ Cleaned old containers in this folder"
 
 docker-compose up -d --build 
 echo "✅ Containers built"
@@ -83,7 +83,7 @@ echo "✅ Services restarted"
 # รอให้ทุก services พร้อม
 # ---------------------------
 echo "⏳ Waiting for all services to be ready..."
-sleep 120
+sleep 60
 
 # ---------------------------
 # ตรวจสอบ services

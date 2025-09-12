@@ -5,8 +5,7 @@
     "event_type": "app_login_failed",
     "user": "alice",
     "ip": "203.0.113.7",
-    "reason": "wrong_password",
-    "@timestamp": "2025-08-23T07:20:00Z"
+    "reason": "wrong_password"
   },
   {
     "tenant": "demoA",
@@ -16,8 +15,7 @@
     "process": "powershell.exe",
     "severity": 8,
     "sha256": "abc...",
-    "action": "quarantine",
-    "@timestamp": "2025-08-23T08:00:00Z"
+    "action": "quarantine"
   },
   {
     "tenant": "demoB",
@@ -29,7 +27,6 @@
     },
     "event_type": "CreateUser",
     "user": "admin",
-    "@timestamp": "2025-08-19T09:10:00Z",
     "raw": {
       "eventName": "CreateUser",
       "requestParameters": { "userName": "temp-user" }
@@ -42,8 +39,7 @@
     "user": "bob@demo.local",
     "ip": "198.51.100.23",
     "status": "Success",
-    "workload": "Exchange",
-    "@timestamp": "2025-08-19T10:05:00Z"
+    "workload": "Exchange"
   },
   {
     "tenant": "demoA",
@@ -53,7 +49,6 @@
     "user": "demo\\eve",
     "host": "DC01",
     "ip": "203.0.113.77",
-    "logon_type": 3,
-    "@timestamp": "2025-08-19T11:11:11Z"
+    "logon_type": 3
   }
 ]

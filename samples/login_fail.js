@@ -1,4 +1,5 @@
-const url = 'http://localhost:3000/ingest';
+require('dotenv').config();
+const url = `${process.env.INGEST_URL}/ingest`;
 
 // event template
 const eventTemplate = {

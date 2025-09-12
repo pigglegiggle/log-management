@@ -1,27 +1,20 @@
 require('dotenv').config();
 const fs = require('fs');
-const path = require('path');
+const url = `${process.env.INGEST_URL}/ingest`;
 
-// ใช้ environment variable หรือ default เป็น localhost
-const baseUrl = process.env.INGEST_URL || 'http://localhost:3000';
-const url = `${baseUrl}/ingest`;
-const eventsFile = path.join(__dirname, 'tenants.json');
+// อ่านไฟล์ JSON
+const events = JSON.parse(fs.readFileSync('tenants.json', 'utf-8'));
 
-console.log(`🎯 Target URL: ${url}`);
-
-// โหลด events จากไฟล์
-function loadEvents() {
-  try {
-    const data = fs.readFileSync(eventsFile, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.error('❌ Error reading events file:', err);
-    return [];
-  }
+function getCurrentTimestamp() {
+  return new Date().toISOString();
 }
 
-// ส่ง event เดียว
-async function sendOne(event) {
+async function sendEvent(eventTemplate) {
+  const event = {
+    ...eventTemplate,
+    "@timestamp": getCurrentTimestamp()
+  };
+
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -34,23 +27,17 @@ async function sendOne(event) {
     }
 
     const text = await response.text();
-    console.log('✅ Sent successfully:', event.source);
+    console.log('Sent successfully:', event, text);
 
   } catch (err) {
-    console.error('❌ Error sending:', event.source, err.message);
+    console.error('Error sending:', err.message);
   }
 }
 
-// ส่งทีละอันแบบรอให้เสร็จก่อนส่งตัวต่อไป
-async function sendAll(events) {
-  for (const ev of events) {
-    await sendOne(ev);
+async function sendAllEvents() {
+  for (const e of events) {
+    await sendEvent(e);
   }
-  console.log('🚀 All events sent!');
 }
 
-// เริ่มส่ง
-(async () => {
-  const events = loadEvents();
-  await sendAll(events);
-})();
+sendAllEvents();

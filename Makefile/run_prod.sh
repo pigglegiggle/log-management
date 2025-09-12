@@ -33,7 +33,7 @@ PORT=3000
 EOL
 
 cat <<EOL > frontend/.env
-NEXT_PUBLIC_API_URL=https://api-log.sinpw.site
+NEXT_PUBLIC_API_URL=https://log-api.sinpw.site
 NODE_ENV=production
 PORT=3001
 INGEST_URL=http://20.2.210.144:3000
@@ -89,7 +89,7 @@ sleep 10
 # ตรวจสอบ services
 # ---------------------------
 echo "Testing services..."
-curl -s https://api-log.sinpw.site >/dev/null && echo "✓ Backend is responding" || echo "⚠ Backend not responding yet"
+curl -s https://log-api.sinpw.site >/dev/null && echo "✓ Backend is responding" || echo "⚠ Backend not responding yet"
 curl -s http://localhost:3000/ingest -X POST -H "Content-Type: application/json" -d '{}' >/dev/null 2>&1 && echo "✓ Ingest is responding" || echo "⚠ Ingest not responding yet"  
 curl -s https://log.sinpw.site >/dev/null && echo "✓ Frontend is responding" || echo "⚠ Frontend not responding yet"
 

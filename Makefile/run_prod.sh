@@ -14,7 +14,7 @@ echo "📝 Creating production environment files..."
 cat <<EOL > .env
 MYSQL_DATABASE=logdb
 MYSQL_ROOT_PASSWORD=1234
-INGEST_URL=http://13.229.103.7:3000
+INGEST_URL=http://20.2.210.144:3000
 EOL
 
 cat <<EOL > backend/.env
@@ -42,14 +42,14 @@ cat <<EOL > frontend/.env
 NEXT_PUBLIC_API_URL=https://api-log.sinpw.site/
 NODE_ENV=production
 PORT=3001
-INGEST_URL=http://13.229.103.7:3000
+INGEST_URL=http://20.2.210.144:3000
 EOL
 
 # ---------------------------
 # Samples .env และติดตั้ง dependencies
 # ---------------------------
 cat <<EOL > samples/.env
-INGEST_URL=http://13.229.103.7:3000
+INGEST_URL=http://20.2.210.144:3000
 EOL
 
 echo "📦 Installing samples dependencies..."
@@ -107,5 +107,5 @@ echo ""
 echo "🎉 PRODUCTION environment is ready!"
 echo "   Frontend: https://log.sinpw.site/"
 echo "   Backend:  https://api-log.sinpw.site/"
-echo "   Ingest:   http://13.229.103.7:3000"
+echo "   Ingest:   http://20.2.210.144:3000"
 echo ""

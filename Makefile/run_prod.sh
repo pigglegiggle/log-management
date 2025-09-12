@@ -70,7 +70,7 @@ echo "✅ MySQL is ready!"
 # ---------------------------
 # สร้าง database schema
 # ---------------------------
-docker-compose exec -T db mysql -u root -p1234 logdb < database_schema.sql
+docker exec -i mysql_db mysql -u root -p1234 logdb < database_schema.sql
 echo "✅ Database schema applied"
 
 # ---------------------------

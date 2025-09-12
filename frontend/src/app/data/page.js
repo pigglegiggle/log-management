@@ -58,7 +58,6 @@ export default function Page() {
         });
 
         const logData = await logsRes.json();
-        console.log('Fetched logs:', logData);
         if (!logsRes.ok || !logData.success) return;
 
         // Simple - just set logs array
@@ -67,7 +66,7 @@ export default function Page() {
         setFilteredLogs(logs);
 
       } catch (err) {
-        console.error('Error during auth check:', err);
+        // console.error('Error during auth check:', err);
       }
     };
 
@@ -75,7 +74,7 @@ export default function Page() {
   }, [router]);
 
   const handleFilterChange = (filters) => {
-    console.log('Filters applied:', filters);
+    // console.log('Filters applied:', filters);
     
     let filtered = [...allLogs];
 

@@ -62,7 +62,7 @@ export default function Page() {
         });
 
         const logData = await logsRes.json();
-        console.log('Fetched logs:', logData);
+        // console.log('Fetched logs:', logData);
         if (!logsRes.ok || !logData.success) {
           setLoading(false);
           return;
@@ -142,7 +142,7 @@ export default function Page() {
   };
 
   const handleFilterChange = (filters) => {
-    console.log('Filters applied:', filters);
+    // console.log('Filters applied:', filters);
     
     let filtered = [...allLogs];
 
@@ -153,10 +153,10 @@ export default function Page() {
       if (startDate.getFullYear() > 2500) {
         startDate.setFullYear(startDate.getFullYear() - 543);
       }
-      console.log('Start Date:', startDate, 'Original:', filters.startDate);
+      // console.log('Start Date:', startDate, 'Original:', filters.startDate);
       filtered = filtered.filter(log => {
         const logDate = new Date(log.timestamp);
-        console.log('Comparing:', logDate, '>=', startDate, '=', logDate >= startDate);
+        // console.log('Comparing:', logDate, '>=', startDate, '=', logDate >= startDate);
         return logDate >= startDate;
       });
     }
@@ -168,7 +168,7 @@ export default function Page() {
         endDate.setFullYear(endDate.getFullYear() - 543);
       }
       endDate.setHours(23, 59, 59, 999); // สิ้นสุดวัน
-      console.log('End Date:', endDate, 'Original:', filters.endDate);
+      // console.log('End Date:', endDate, 'Original:', filters.endDate);
       filtered = filtered.filter(log => {
         const logDate = new Date(log.timestamp);
         return logDate <= endDate;

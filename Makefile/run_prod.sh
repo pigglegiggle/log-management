@@ -83,7 +83,7 @@ echo "✅ Services restarted"
 # รอให้ทุก services พร้อม
 # ---------------------------
 echo "⏳ Waiting for all services to be ready..."
-sleep 10
+sleep 120
 
 # ---------------------------
 # ตรวจสอบ services

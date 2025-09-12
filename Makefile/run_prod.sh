@@ -46,27 +46,6 @@ cat <<EOL > samples/.env
 INGEST_URL=http://20.2.210.144:3000
 EOL
 
-# Check if npm is installed
-if ! command -v npm &> /dev/null; then
-    echo "📦 Installing Node.js and npm..."
-    if command -v apt-get &> /dev/null; then
-        # Ubuntu/Debian
-        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-        sudo apt-get install -y nodejs
-    elif command -v yum &> /dev/null; then
-        # CentOS/RHEL/Amazon Linux
-        curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-        sudo yum install -y nodejs npm
-    elif command -v brew &> /dev/null; then
-        # macOS with Homebrew
-        brew install node
-    else
-        echo "❌ Could not install npm. Please install Node.js manually."
-        exit 1
-    fi
-    echo "✅ Node.js and npm installed"
-fi
-
 cd samples && npm install --silent --production && cd ..
 echo "✅ Samples ready"
 

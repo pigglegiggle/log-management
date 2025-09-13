@@ -18,14 +18,14 @@
 
 ## 2. Tech Stack
 
-| Component        | Technology / Tools             | Port                        |
-|-----------------|-------------------------------|--------------------------------|
-| Frontend UI      | Next.js + Next.js             | 3001 (HTTP)                    |
-| Backend API      | Node.js + Express             | 3002 (HTTP, REST API)          |
-| Ingest Service   | Node.js + Express             | 3000 (HTTP, REST API)          |
-| Syslog Collector | Fluent Bit                    | UDP 514/515                     |
-| Database         | MySQL 8.0                     | 3306                           |
-| Containerization | Docker + Docker Compose       |                           |
+| Component        | Technology / Tools             |
+|-----------------|-------------------------------|
+| Frontend UI      | Next.js           |
+| Backend API      | Node.js + Express             |
+| Ingest Service   | Node.js + Express             |
+| Syslog Collector | Fluent Bit                    |
+| Database         | MySQL 8.0                     |
+| Containerization | Docker + Docker Compose       |
 
 ## 3. Database และ Multi-Tenant
 - **ตารางหลัก**: users, tenants, sources, logs, alerts  
@@ -62,29 +62,6 @@ tenant   | เข้าถึงได้แค่ข้อมูลตัวเ
 - Admin เห็นข้อมูลทั้งหมด (multi-tenant view)
 - Tenant เห็นเฉพาะข้อมูลของตนเอง
 
-### 5.3 Data Storage Pattern
-```sql
-logs table structure:
-- tenant_id (FK) → tenants.id (สำหรับ tenant logs)
-- source_id (FK) → sources.id (แหล่งที่มา)
-- log_type → classification (network/firewall/tenant)
-```
-
-### 5.4 Tenant Authentication Flow
-```
-1. User Login → JWT Token (contains tenant info)
-2. API Request → JWT Validation → Extract tenant_id
-3. Database Query → Auto-filter by tenant_id (if not admin)
-4. Return filtered results
-```
-
-### 5.5 Tenant Registration Process
-```
-1. Admin creates tenant record in database
-2. Tenant user created with tenant role
-3. Username = tenant name (for mapping)
-4. Logs automatically assigned to tenant via source mapping
-```
 
 ## 6. Indexes ที่มีใน Database
 

@@ -9,11 +9,14 @@
 
 ## การติดตั้งบน VM Ubuntu
 
-### 1. ติดตั้ง Docker และ Node.js
-
+### 1. ติดตั้ง Docker, Git และ Node.js
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
+
+# ติดตั้ง Git
+sudo apt install -y git
+git --version  # ตรวจสอบ version
 
 # ติดตั้ง Docker
 curl -fsSL https://get.docker.com -o get-docker.sh
@@ -34,6 +37,7 @@ sudo apt-get install -y nodejs
 sudo npm install -g pm2
 
 # ตรวจสอบ versions
+git --version
 node --version
 npm --version
 docker --version
@@ -42,6 +46,7 @@ docker-compose --version
 # รีสตาร์ท session
 exit
 # เข้า SSH ใหม่
+
 ```
 
 ### 2. Clone และ Setup Project

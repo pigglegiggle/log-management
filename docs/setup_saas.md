@@ -91,7 +91,6 @@ Port 515  (Syslog)   - 0.0.0.0/0
 ### SSL/TLS Configuration (Caddy)
 ```bash
 # สร้างไฟล์ Caddyfile
-cat <<EOL > Caddyfile
 your-domain.com {
     reverse_proxy frontend:3001
 }
@@ -99,7 +98,6 @@ your-domain.com {
 your-sub-domain.com {
     reverse_proxy backend:3002
 }
-EOL
 ```
 
 

@@ -2,13 +2,15 @@
 
 API_URL="http://localhost:3000/ingest"
 
-# Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOG_FILE="$SCRIPT_DIR/tenant.json"
+LOG_FILE="$SCRIPT_DIR/tenants.json"
 
-curl -s -X POST "$API_URL" \
-     -H "Content-Type: application/json" \
-     -d @"$LOG_FILE"
+# ส่งทีละ event จาก tenants.json
+jq -c '.[]' "$LOG_FILE" | while read -r line; do
+  curl -s -X POST "$API_URL" \
+    -H "Content-Type: application/json" \
+    -d "$line"
+done
 
 echo
 echo "Logs from $LOG_FILE sent successfully"

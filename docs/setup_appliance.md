@@ -3,13 +3,13 @@
 ## Requirements เบื้องต้น (ขั้นต่ำ)
 
 ### Hardware Requirements 
-- **CPU**: 2 cores
-- **RAM**: 4 GB
-- **Storage**: 20 GB Disk
+- **CPU**: 4 vCPU
+- **RAM**: 8 GB
+- **Storage**: 40 GB Disk
 
 ## การติดตั้งบน Local Machine
 
-### 1. ติดตั้ง Software ที่จำเป็น
+### ติดตั้ง Software ที่จำเป็น
 
 #### สำหรับ macOS:
 ```bash
@@ -73,41 +73,25 @@ docker --version
 docker-compose --version
 ```
 
-### 2. Clone และ Setup Project
+### Clone และ Setup Project
 
 ```bash
 # Clone repository
 git clone https://github.com/pigglegiggle/log-management.git
 cd log-management
+```
 
-# รัน development deployment script
-chmod +x Makefile/run_dev.sh
+
+### Setup ระบบ
+```bash
+# Development mode
 ./Makefile/run_dev.sh
 ```
 
-### 3. ตรวจสอบ Services
+### ทดสอบการส่ง Log
 
 ```bash
-# ตรวจสอบว่า containers รันอยู่
-docker ps
-
-# ตรวจสอบ logs
-docker logs backend
-docker logs frontend
-docker logs mysql_db
-
-# ทดสอบ endpoints
-curl http://localhost:3001  # Frontend
-curl http://localhost:3002  # Backend API
-curl -X POST http://localhost:3000/ingest -H "Content-Type: application/json" -d '{}' # Ingest Service
-```
-
-### 4. ทดสอบการส่ง Log
-
-```bash
-# ติดตั้ง dependencies สำหรับ samples
 cd samples
-npm install
 
 # ทดสอบส่ง log ตัวอย่าง
 node post_log.js
@@ -119,7 +103,6 @@ node send_syslog.js
 node login_fail.js
 
 # ทดสอบผ่าน json batch
-chmod +x send_tenant.sh
 ./send_tenant.sh
 
 # กลับไปยัง root directory
@@ -135,49 +118,5 @@ cd ..
 
 ### ตรวจสอบข้อมูลในหน้าเว็บ
 1. เปิด http://localhost:3001
-2. สมัครสมาชิก หรือ เข้าสู่ระบบ
+2. เข้าสู่ระบบ
 3. ดูข้อมูล Log ที่เพิ่งส่งเข้ามา
-
-## การจัดการระบบ
-
-### Setup ระบบ
-```bash
-# Development mode (แนะนำสำหรับ Local)
-./Makefile/run_dev.sh
-
-```
-
-### หยุดระบบ
-```bash
-docker-compose down
-```
-
-### เริ่มระบบใหม่
-```bash
-# Development (มี hot reload)
-./Makefile/run_dev.sh
-```
-
-### ดู Logs ของ Services
-```bash
-docker logs backend
-docker logs frontend
-docker logs ingest
-docker logs mysql_db
-```
-
-### ล้างข้อมูลทั้งหมด (รีเซ็ตระบบ)
-```bash
-docker-compose down -v
-docker system prune -f
-```
-
-### การ Update System
-```bash
-# Pull latest code
-git pull origin main
-
-# Rebuild และ restart (Development)
-./Makefile/run_dev.sh
-
-```

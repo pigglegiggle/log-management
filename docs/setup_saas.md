@@ -72,9 +72,9 @@ node login_fail.js
 ## การเข้าถึงจากภายนอก
 
 ### URLs สำหรับเข้าถึง
-- **Frontend**: `http://your-ec2-ip:3001 or your domain`
-- **Backend API**: `http://your-ec2-ip:3002`
-- **Ingest Service**: `http://your-ec2-ip:3000 or your sub domain`
+- **Frontend**: `http://your-vm-public-ip:3001 or your domain`
+- **Backend API**: `http://your-vm-public-ip:3002`
+- **Ingest Service**: `http://your-vm-public-ip:3000 or your sub domain`
 
 ### Security Group Configuration
 ```

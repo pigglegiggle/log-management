@@ -32,6 +32,6 @@
 
 ###
 
-<a target="_blank" align="left">https://log.sinpw.site/auth/login</a>
+<a align="left">https://log.sinpw.site/auth/login</a>
 
 ###

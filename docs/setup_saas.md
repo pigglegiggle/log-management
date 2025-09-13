@@ -7,18 +7,9 @@
 - **RAM**: 8 GB
 - **Storage**: 40 GB Disk
 
-## การติดตั้งบน AWS EC2
+## การติดตั้งบน VM Ubuntu
 
-### 1. สร้าง EC2 Instance
-
-```bash
-# Instance Type: t3.xlarge (4 vCPU, 16 GB RAM) หรือ t3.large (2 vCPU, 8 GB RAM)
-# OS: Ubuntu 22.04 LTS
-# Storage: 40GB gp3
-# Security Group: เปิด ports 22, 80, 443, 3000-3002, 514-515
-```
-
-### 2. ติดตั้ง Docker และ Node.js
+### 1. ติดตั้ง Docker และ Node.js
 
 ```bash
 # Update system
@@ -53,7 +44,7 @@ exit
 # เข้า SSH ใหม่
 ```
 
-### 3. Clone และ Setup Project
+### 2. Clone และ Setup Project
 
 ```bash
 # Clone repository
@@ -61,49 +52,25 @@ git clone https://github.com/pigglegiggle/log-management.git
 cd log-management
 
 # รัน production deployment script
-chmod +x Makefile/run_prod.sh
 ./Makefile/run_prod.sh
 ```
 
-### 4. ตรวจสอบ Services
+### 3. ทดสอบการส่ง Log
 
 ```bash
-# ตรวจสอบว่า containers รันอยู่
-docker ps
-
-# ตรวจสอบ logs
-docker logs backend
-docker logs frontend
-docker logs mysql_db
-
-# ทดสอบ endpoints
-curl http://localhost:3001  # Frontend
-curl http://localhost:3002  # Backend API
-curl -X POST http://localhost:3000/ingest -H "Content-Type: application/json" -d '{}' # Ingest Service
-```
-
-### 5. ทดสอบการส่ง Log
-
-```bash
-# ติดตั้ง dependencies สำหรับ samples
 cd samples
-npm install
 
-# ทดสอบส่ง log ตัวอย่าง
+# ทดสอบส่ง log ผ่าน HTTP
 node post_log.js
 
-# ทดสอบส่ง syslog
+# ทดสอบส่ง syslog ผ่าน UDP
 node send_syslog.js
 
-# ทดสอบ login failure logs
+# ทดสอบ login failure logs (ระบบ alert)
 node login_fail.js
 
 # ทดสอบผ่าน json batch
-chmod +x samples/send_tenant.sh
 ./samples/send_tenant.sh
-
-# กลับไปยัง root directory
-cd ..
 ```
 
 ## การเข้าถึงจากภายนอก
@@ -133,14 +100,6 @@ Port 515  (Syslog)   - 0.0.0.0/0
 ./Makefile/run_prod.sh
 ```
 
-### Environment Variables
-Production script จะสร้าง secure passwords อัตโนมัติ หากต้องการกำหนดเอง:
-```bash
-# แก้ไขใน Makefile/run_prod.sh
-MYSQL_ROOT_PASSWORD=your_secure_password
-JWT_SECRET=your_jwt_secret_key
-```
-
 ### SSL/TLS Configuration (Caddy)
 ```bash
 # สร้างไฟล์ Caddyfile
@@ -153,15 +112,6 @@ your-sub-domain.com {
     reverse_proxy backend:3002
 }
 EOL
-```
-
-### การ Update System
-```bash
-# Pull latest code
-git pull origin main
-
-# Rebuild และ restart (Production)
-./Makefile/run_prod.sh
 ```
 
 

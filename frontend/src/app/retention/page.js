@@ -130,14 +130,19 @@ export default function RetentionPage() {
         <meta name="description" content="Data retention policies and storage management" />
       </Head>
       <div className='flex h-screen bg-gray-50'>
-        {/* Aside Navigation */}
-        <div className='flex-shrink-0'>
+        {/* Aside Navigation - Hidden on mobile, shows as drawer */}
+        <div className='hidden lg:flex lg:flex-shrink-0'>
+          <Aside username={username} />
+        </div>
+        
+        {/* Mobile Aside - Always rendered for drawer functionality */}
+        <div className='lg:hidden'>
           <Aside username={username} />
         </div>
         
         {/* Main Content */}
         <div className='flex-1 overflow-y-auto'>
-          <div className='p-6'>
+          <div className='p-6 lg:p-6 pt-20 lg:pt-6'>
           <div>
             {/* Header */}
             <div className='mb-6'>

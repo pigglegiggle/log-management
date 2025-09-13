@@ -147,14 +147,19 @@ export default function AlertsPage() {
         <meta name="description" content="Security alerts and monitoring notifications" />
       </Head>
       <div className='flex h-screen bg-gray-50'>
-        {/* Aside Navigation */}
-        <div className='flex-shrink-0'>
+        {/* Aside Navigation - Hidden on mobile, shows as drawer */}
+        <div className='hidden lg:flex lg:flex-shrink-0'>
+          <Aside username={username} />
+        </div>
+        
+        {/* Mobile Aside - Always rendered for drawer functionality */}
+        <div className='lg:hidden'>
           <Aside username={username} />
         </div>
       
       {/* Main Content */}
       <div className='flex-1 flex flex-col overflow-hidden'>
-        <div className='p-4 bg-white border-b border-gray-200'>
+        <div className='p-4 bg-white border-b border-gray-200 mt-16 lg:mt-0'>
           <h1 className='text-2xl font-bold text-gray-800'>
             ระบบแจ้งเตือน ({filteredAlerts.length} รายการ)
           </h1>

@@ -9,7 +9,7 @@
 
 ## การติดตั้งบน VM Ubuntu
 
-### 1. ติดตั้ง Docker, Docker Compose และ Git
+### ติดตั้ง Docker, Docker Compose และ Git
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
@@ -40,7 +40,7 @@ exit
 
 ```
 
-### 2. Clone และ Setup Project
+### Clone และ Setup Project
 
 ```bash
 # Clone repository
@@ -51,7 +51,7 @@ cd log-management
 ./Makefile/run_prod.sh
 ```
 
-### 3. ทดสอบการส่ง Log
+### ทดสอบการส่ง Log
 
 ```bash
 cd samples
@@ -86,14 +86,6 @@ Port 3001 (Frontend) - 0.0.0.0/0
 Port 3002 (Backend)  - 0.0.0.0/0
 Port 514  (Syslog)   - 0.0.0.0/0
 Port 515  (Syslog)   - 0.0.0.0/0
-```
-
-## การตั้งค่าต่างๆ
-
-### Environment Modes
-```bash
-# Production mode (สำหรับ EC2/Cloud)
-./Makefile/run_prod.sh
 ```
 
 ### SSL/TLS Configuration (Caddy)

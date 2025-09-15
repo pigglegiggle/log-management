@@ -21,12 +21,25 @@ async function cleanupOldLogs() {
       [logsDateStr]
     );
 
-    // ลบ alerts เก่า
+    // ลบ alerts เก่า (รวมถึง alerts ที่เกี่ยวข้องกับ logs ที่ถูกลบ)
     const alertsDateStr = getPastDateStr(RETENTION_ALERT_DAYS);
+    
+    // ลบ alerts ที่เก่าเกิน retention period
     const [alertsResult] = await connection.query(
       'DELETE FROM alerts WHERE created_at < ?',
       [alertsDateStr]
     );
+
+    // ลบ alerts ที่เกี่ยวข้องกับ IP ที่ไม่มี logs แล้ว (optional cleanup)
+    const [alertsWithoutLogsResult] = await connection.query(`
+      DELETE a FROM alerts a
+      WHERE a.ip_address IS NOT NULL 
+        AND NOT EXISTS (
+          SELECT 1 FROM logs l 
+          WHERE l.src_ip = a.ip_address 
+            OR l.dst_ip = a.ip_address
+        )
+    `);
 
     // Optimize tables
     await connection.query('OPTIMIZE TABLE logs');

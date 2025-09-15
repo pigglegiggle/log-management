@@ -143,59 +143,15 @@ app.post('/ingest', async (req, res) => {
         break;
       }
 
-      default: {
-        const tenantId = await getTenantId(data.tenant);
-        const sourceId = await getSourceId(data.source);
-        data = { ...data, tenant_id: tenantId, source_id: sourceId };
-
-        // สร้าง timestamp เก่า >30 วัน
-        const oldCreatedAt = new Date();
-        oldCreatedAt.setDate(oldCreatedAt.getDate() - 31); // 31 วันย้อนหลัง
-
-        logData = {
-          timestamp: data['@timestamp'] ? new Date(data['@timestamp']) : new Date(),
-          tenant_id: data.tenant_id,
-          source_id: data.source_id,
-          event_type: data.event_type || null,
-          severity: data.severity || null,
-          src_ip: data.ip || null,
-          user: data.user || null,
-          host: data.host || null,
-          action: data.action || null,
-          cloud: data.cloud ? JSON.stringify(data.cloud) : null,
-          log_type: 'tenant',
-          raw_data: rawLog,
-          created_at: oldCreatedAt, // <-- เพิ่มตรงนี้
-        };
-
-        await connection.execute(`
-          INSERT INTO logs (
-            timestamp, tenant_id, source_id, event_type, severity, src_ip,
-            user, host, action, cloud, log_type, raw_data, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-          logData.timestamp,
-          logData.tenant_id,
-          logData.source_id,
-          logData.event_type,
-          logData.severity,
-          logData.src_ip,
-          logData.user,
-          logData.host,
-          logData.action,
-          logData.cloud,
-          logData.log_type,
-          logData.raw_data,
-          logData.created_at, // <-- เพิ่มตรงนี้
-        ]);
-
-        break;
-      }
-        
+      // ทดสอบ case เพื่อสร้าง log เก่า >30 วัน
       // default: {
       //   const tenantId = await getTenantId(data.tenant);
       //   const sourceId = await getSourceId(data.source);
       //   data = { ...data, tenant_id: tenantId, source_id: sourceId };
+
+      //   // สร้าง timestamp เก่า >30 วัน
+      //   const oldCreatedAt = new Date();
+      //   oldCreatedAt.setDate(oldCreatedAt.getDate() - 31); // 31 วันย้อนหลัง
 
       //   logData = {
       //     timestamp: data['@timestamp'] ? new Date(data['@timestamp']) : new Date(),
@@ -210,13 +166,14 @@ app.post('/ingest', async (req, res) => {
       //     cloud: data.cloud ? JSON.stringify(data.cloud) : null,
       //     log_type: 'tenant',
       //     raw_data: rawLog,
+      //     created_at: oldCreatedAt, // <-- เพิ่มตรงนี้
       //   };
 
       //   await connection.execute(`
       //     INSERT INTO logs (
       //       timestamp, tenant_id, source_id, event_type, severity, src_ip,
-      //       user, host, action, cloud, log_type, raw_data
-      //     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      //       user, host, action, cloud, log_type, raw_data, created_at
+      //     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       //   `, [
       //     logData.timestamp,
       //     logData.tenant_id,
@@ -229,11 +186,55 @@ app.post('/ingest', async (req, res) => {
       //     logData.action,
       //     logData.cloud,
       //     logData.log_type,
-      //     logData.raw_data
+      //     logData.raw_data,
+      //     logData.created_at, // <-- เพิ่มตรงนี้
       //   ]);
 
       //   break;
       // }
+        
+      default: {
+        const tenantId = await getTenantId(data.tenant);
+        const sourceId = await getSourceId(data.source);
+        data = { ...data, tenant_id: tenantId, source_id: sourceId };
+
+        logData = {
+          timestamp: data['@timestamp'] ? new Date(data['@timestamp']) : new Date(),
+          tenant_id: data.tenant_id,
+          source_id: data.source_id,
+          event_type: data.event_type || null,
+          severity: data.severity || null,
+          src_ip: data.ip || null,
+          user: data.user || null,
+          host: data.host || null,
+          action: data.action || null,
+          cloud: data.cloud ? JSON.stringify(data.cloud) : null,
+          log_type: 'tenant',
+          raw_data: rawLog,
+        };
+
+        await connection.execute(`
+          INSERT INTO logs (
+            timestamp, tenant_id, source_id, event_type, severity, src_ip,
+            user, host, action, cloud, log_type, raw_data
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          logData.timestamp,
+          logData.tenant_id,
+          logData.source_id,
+          logData.event_type,
+          logData.severity,
+          logData.src_ip,
+          logData.user,
+          logData.host,
+          logData.action,
+          logData.cloud,
+          logData.log_type,
+          logData.raw_data
+        ]);
+
+        break;
+      }
     }
 
     res.json({ status: 'ok', data: logData });
